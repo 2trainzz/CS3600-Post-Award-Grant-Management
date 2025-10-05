@@ -1,6 +1,6 @@
 import { app, BrowserWindow } from 'electron';
 import path from 'path';
-import { fork, ChildProcess } from 'child_process';
+import { fork, spawn, ChildProcess } from 'child_process';
 
 let mainWindow: BrowserWindow | null = null;
 let serverProcess: ChildProcess | null = null;
@@ -27,6 +27,7 @@ function createWindow() {
   }
 }
 
+/*
 function startServer() {
   const serverPath = isDev 
     ? path.join(__dirname, '../server/server.ts')
@@ -63,6 +64,57 @@ app.whenReady().then(() => {
     }
   });
 });
+*/
+function startServer() {
+  // In development, server runs separately via npm script
+  // In production, we need to start it
+  if (!isDev) {
+    const serverPath = path.join(__dirname, '../dist-server/server.js');
+    serverProcess = fork(serverPath, [], {
+      env: { ...process.env, PORT: serverPort.toString() }
+    });
+
+    serverProcess.on('error', (err) => {
+      console.error('Failed to start server:', err);
+    });
+  }
+}
+/*
+app.whenReady().then(() => {
+  if (isDev) {
+    // Server runs separately in dev mode, just wait a bit
+    setTimeout(() => {
+      createWindow();
+    }, 2000);
+  } else {
+    startServer();
+    setTimeout(() => {
+      createWindow();
+    }, 1000);
+  }
+
+  app.on('activate', () => {
+    if (BrowserWindow.getAllWindows().length === 0) {
+      createWindow();
+    }
+  });
+});
+*/
+app.whenReady().then(() => {
+  if (!isDev) {
+    startServer();
+  }
+  
+  setTimeout(() => {
+    createWindow();
+  }, isDev ? 2000 : 1000);
+
+  app.on('activate', () => {
+    if (BrowserWindow.getAllWindows().length === 0) {
+      createWindow();
+    }
+  });
+});
 
 app.on('window-all-closed', () => {
   if (serverProcess) {
@@ -72,9 +124,15 @@ app.on('window-all-closed', () => {
     app.quit();
   }
 });
-
+/*
 app.on('before-quit', () => {
   if (serverProcess) {
+    serverProcess.kill();
+  }
+});
+*/
+app.on('before-quit', () => {
+  if (serverProcess && !isDev) {
     serverProcess.kill();
   }
 });

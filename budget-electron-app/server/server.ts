@@ -1,15 +1,32 @@
 import express from 'express';
-//import bcrypt from 'bcrypt';
-//import prisma from './prisma';
+import bcrypt from 'bcrypt';
+import prisma from './prisma';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 import cors from 'cors';
+//import { getApproval } from './gemini';
+//import getGeminiResponse from './gemini' //need a gemini.ts here??
+/*app.post('/gemini', async (req, res) => {
+  const { prompt } = req.body;
+  try {
+    const response = await getGeminiResponse(prompt);
+    res.json({ text: response });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to get response from Gemini' });
+  }
+});
+//has module export = app
+*/
 
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
+
 app.use(express.json());
 app.use(cors());
 
+/*
 //beginner code to show electron works
 app.get('/api/hello', (_req, res) => {
   res.json({ message: 'Hello from Express!' });
@@ -25,8 +42,66 @@ app.get('/api/data', (_req, res) => {
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
+*/
 
 /*
+//gemini
+// Sample API route for submission
+app.post('/api/requests/submit', async (req, res) => {
+  const { grantId, amount, description } = req.body;
+
+  // 1. Data Retrieval
+  const grant = await prisma.grant.findUnique({
+    where: { id: grantId },
+    //include: { rules: true },
+  });
+
+  if (!grant || grant.remainingAmount < amount) {
+    return res.status(400).send("Insufficient funds or grant not found.");
+  }
+  
+  // 2. Get LLM Approval (Core Logic)
+  const approval = await getApproval({
+    totalAmount: grant.totalAmount,
+    remainingAmount: grant.remainingAmount,
+    //rules: grant.rules.rules,
+    requestAmount: amount,
+    requestDescription: description,
+  });
+  
+  // 3. Update DB based on decision
+  const status = approval.decision;
+
+  // In a real app, this should be a transaction!
+  if (status === "Approved") {
+    await prisma.grant.update({
+      where: { id: grantId },
+      data: { remainingAmount: grant.remainingAmount - amount },
+    });
+  }
+
+  const newRequest = await prisma.spendingRequest.create({
+    data: {
+      spendingRequestId,
+      amount,
+      description,
+      status: status,
+      llmJustification: approval.justification,
+    },
+  });
+
+  res.json({
+    status: newRequest.status,
+    //justification: newRequest.llmJustification,
+  });
+});
+
+app.listen(PORT, () => {
+  console.log(`Express API running on port ${PORT}`);
+});
+*/
+
+ //claude
 // Simple session storage (in production, use proper session management)
 const sessions = new Map<string, number>(); // token -> userId
 
@@ -46,6 +121,122 @@ function authenticate(req: any, res: any, next: any) {
   req.userId = sessions.get(token);
   next();
 }
+//LLM stuff
+// AI-powered request parsing
+app.post('/api/spending-requests/ai-parse', authenticate, async (req: any, res) => {
+  try {
+    const { userMessage, grantId } = req.body;
+    
+    if (!userMessage || !grantId) {
+      return res.status(400).json({ error: 'Missing userMessage or grantId' });
+    }
+    
+    // Check if user has access to this grant
+    const userGrant = await prisma.userGrant.findFirst({
+      where: {
+        userId: req.userId,
+        grantId: parseInt(grantId)
+      }
+    });
+    
+    if (!userGrant) {
+      return res.status(403).json({ error: 'Access denied to this grant' });
+    }
+    
+    // Fetch grant details
+    const grant = await prisma.grant.findUnique({
+      where: { id: parseInt(grantId) }
+    });
+    
+    // Get applicable rules
+    const rules = await prisma.rule.findMany({
+      where: {
+        //OR: [
+        //  { grantId: parseInt(grantId) },
+        //  { grantId: null }
+        //],
+        //isActive: true
+      }
+    });
+    
+    // Get applicable fringe rates
+    const fringeRates = await prisma.fringeRate.findMany({
+      where: {
+        //OR: [
+        //  { grantId: parseInt(grantId) },
+        //  { grantId: null }
+        //]
+      }
+    });
+    
+    // Build context for Gemini
+    const context = `
+You are a grant management assistant. Parse the user's spending request and extract structured information.
+
+GRANT INFORMATION:
+- Grant Name: ${grant?.grantName}
+- Grant Number: ${grant?.grantNumber}
+- Total Budget: $${grant?.totalAmount}
+- Remaining Budget: $${grant?.remainingAmount}
+- Student Balance: $${grant?.studentBalance}
+- Travel Balance: $${grant?.travelBalance}
+
+APPLICABLE RULES:
+${rules.map(r => `- ${r.ruleType}: ${r.description} (Policy: ${r.policyHolder})`).join('\n')}
+
+FRINGE RATES:
+${fringeRates.map(f => `- ${f.description}: ${f.rate}%`).join('\n')}
+
+USER REQUEST:
+"${userMessage}"
+
+TASK:
+Extract the following information and return ONLY valid JSON (no markdown, no explanation):
+{
+  "category": "travel" or "students" (determine from context),
+  "amount": numeric amount in dollars,
+  "description": clear description of the expense,
+  "suggestedRules": [array of rule IDs that apply],
+  "suggestedFringeRates": [array of fringe rate IDs that apply],
+  "warnings": [array of any policy violations or concerns],
+  "confidence": number between 0-1 indicating parsing confidence
+}
+
+If the request is unclear or missing information, include it in warnings.
+`;
+
+    // Call Gemini
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash-exp' });
+    const result = await model.generateContent(context);
+    const responseText = result.response.text();
+    
+    // Parse JSON response
+    let parsedData;
+    try {
+      // Remove markdown code blocks if present
+      const cleanedText = responseText.replace(/```json\n?|\n?```/g, '').trim();
+      parsedData = JSON.parse(cleanedText);
+    } catch (parseError) {
+      return res.status(500).json({ 
+        error: 'Failed to parse AI response',
+        rawResponse: responseText 
+      });
+    }
+    
+    // Add grant context for frontend
+    parsedData.grant = {
+      id: grant?.id,
+      name: grant?.grantName,
+      number: grant?.grantNumber
+    };
+    
+    res.json({ parsed: parsedData });
+    
+  } catch (error: any) {
+    console.error('AI parse error:', error);
+    res.status(500).json({ error: error.message || 'Failed to parse request' });
+  }
+});
 
 // Auth routes
 app.post('/api/auth/register', async (req, res) => {
@@ -531,8 +722,9 @@ app.get('/api/grants/:id/fringe-rates', authenticate, async (req: any, res) => {
     res.status(400).json({ error: error.message });
   }
 });
+*/
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
-*/
+

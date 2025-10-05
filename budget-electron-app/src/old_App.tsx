@@ -1,3 +1,42 @@
+/*
+import { useState, useEffect } from 'react';
+import './App.css';
+
+function App() {
+  const [message, setMessage] = useState('');
+  const [data, setData] = useState<string[]>([]);
+
+  useEffect(() => {
+    // Fetch from Express server
+    fetch('http://localhost:3001/api/hello')
+      .then(res => res.json())
+      .then(data => setMessage(data.message))
+      .catch(err => console.error(err));
+  }, []);
+
+  const fetchData = () => {
+    fetch('http://localhost:3001/api/data')
+      .then(res => res.json())
+      .then(result => setData(result.data))
+      .catch(err => console.error(err));
+  };
+
+  return (
+    <div className="App">
+      <h1>Electron + React + Express</h1>
+      <p>Message from server: {message}</p>
+      <button onClick={fetchData}>Fetch Data</button>
+      <ul>
+        {data.map((item, i) => <li key={i}>{item}</li>)}
+      </ul>
+    </div>
+  );
+}
+
+export default App;
+*/
+
+
 import { useState, useEffect } from 'react';
 import './App.css';
 
@@ -20,15 +59,10 @@ function App() {
   const [reqCategory, setReqCategory] = useState('');
   const [reqAmount, setReqAmount] = useState('');
   const [reqDescription, setReqDescription] = useState('');
-  
-  // AI chat state
-  const [aiMessage, setAiMessage] = useState('');
-  const [aiParsedData, setAiParsedData] = useState(null);
-  const [aiLoading, setAiLoading] = useState(false);
-  const [useAiMode, setUseAiMode] = useState(false);
 
   // Login
   const handleLogin = async () => {
+    console.log('Attempting login to:', `${API_BASE}/auth/login`);
     setError('');
     
     try {
@@ -96,50 +130,6 @@ function App() {
     }
   };
 
-  // AI Parse Request
-  const handleAiParse = async () => {
-    if (!aiMessage.trim() || !reqGrantId) {
-      setError('Please select a grant and enter a request');
-      return;
-    }
-    
-    setAiLoading(true);
-    setError('');
-    
-    try {
-      const res = await fetch(`${API_BASE}/spending-requests/ai-parse`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          grantId: parseInt(reqGrantId),
-          userMessage: aiMessage
-        })
-      });
-      
-      const data = await res.json();
-      
-      if (!res.ok) {
-        setError(data.error || 'Failed to parse request');
-        setAiLoading(false);
-        return;
-      }
-      
-      setAiParsedData(data.parsed);
-      // Auto-fill the form with parsed data
-      setReqCategory(data.parsed.category);
-      setReqAmount(data.parsed.amount.toString());
-      setReqDescription(data.parsed.description);
-      
-    } catch (err) {
-      setError('Failed to connect to AI service');
-    } finally {
-      setAiLoading(false);
-    }
-  };
-
   // Create spending request
   const handleCreateRequest = async () => {
     setError('');
@@ -176,8 +166,6 @@ function App() {
       setReqCategory('');
       setReqAmount('');
       setReqDescription('');
-      setAiMessage('');
-      setAiParsedData(null);
       setView('requests');
       fetchSpendingRequests();
     } catch (err) {
@@ -372,174 +360,77 @@ function App() {
 
         {view === 'create' && (
           <div>
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold text-gray-800">Create Spending Request</h2>
-              <button
-                onClick={() => {
-                  setUseAiMode(!useAiMode);
-                  setAiParsedData(null);
-                  setError('');
-                }}
-                className="px-4 py-2 bg-purple-100 text-purple-700 rounded-md hover:bg-purple-200 transition-colors font-medium text-sm"
-              >
-                {useAiMode ? '📝 Manual Mode' : '🤖 AI Assistant'}
-              </button>
-            </div>
-            
+            <h2 className="text-2xl font-bold text-gray-800 mb-6">Create Spending Request</h2>
             <div className="bg-white rounded-lg shadow-md p-6 max-w-2xl">
-              {/* Grant Selection - Always shown */}
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Grant
-                </label>
-                <select
-                  value={reqGrantId}
-                  onChange={(e) => setReqGrantId(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Grant
+                  </label>
+                  <select
+                    value={reqGrantId}
+                    onChange={(e) => setReqGrantId(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  >
+                    <option value="">Select a grant...</option>
+                    {grants.map((grant) => (
+                      <option key={grant.id} value={grant.id}>
+                        {grant.grantName} ({grant.grantNumber})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Category
+                  </label>
+                  <select
+                    value={reqCategory}
+                    onChange={(e) => setReqCategory(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  >
+                    <option value="">Select category...</option>
+                    <option value="travel">Travel</option>
+                    <option value="students">Students</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Amount
+                  </label>
+                  <input
+                    type="number"
+                    value={reqAmount}
+                    onChange={(e) => setReqAmount(e.target.value)}
+                    step="0.01"
+                    min="0"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    placeholder="0.00"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Description
+                  </label>
+                  <textarea
+                    value={reqDescription}
+                    onChange={(e) => setReqDescription(e.target.value)}
+                    rows={4}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    placeholder="Provide details about this spending request..."
+                  />
+                </div>
+
+                <button
+                  onClick={handleCreateRequest}
+                  className="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 transition-colors font-medium"
                 >
-                  <option value="">Select a grant...</option>
-                  {grants.map((grant) => (
-                    <option key={grant.id} value={grant.id}>
-                      {grant.grantName} ({grant.grantNumber})
-                    </option>
-                  ))}
-                </select>
+                  Submit Request
+                </button>
               </div>
-
-              {/* AI Mode */}
-              {useAiMode ? (
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Describe your request
-                    </label>
-                    <textarea
-                      value={aiMessage}
-                      onChange={(e) => setAiMessage(e.target.value)}
-                      rows={4}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
-                      placeholder="Example: I need $2500 for travel to the ACM conference in Seattle next month, including flights and hotel for 3 days"
-                      disabled={aiLoading}
-                    />
-                  </div>
-
-                  <button
-                    onClick={handleAiParse}
-                    disabled={aiLoading || !reqGrantId || !aiMessage.trim()}
-                    className="w-full bg-purple-600 text-white py-2 px-4 rounded-md hover:bg-purple-700 transition-colors font-medium disabled:bg-gray-300 disabled:cursor-not-allowed"
-                  >
-                    {aiLoading ? '🤖 Analyzing...' : '✨ Parse with AI'}
-                  </button>
-
-                  {/* AI Parsed Results */}
-                  {aiParsedData && (
-                    <div className="mt-6 border-t pt-6">
-                      <h3 className="text-lg font-semibold text-gray-800 mb-4">📋 Parsed Information</h3>
-                      
-                      {aiParsedData.warnings && aiParsedData.warnings.length > 0 && (
-                        <div className="bg-yellow-50 border border-yellow-200 rounded-md p-3 mb-4">
-                          <p className="text-sm font-medium text-yellow-800 mb-1">⚠️ Warnings:</p>
-                          <ul className="text-sm text-yellow-700 list-disc list-inside">
-                            {aiParsedData.warnings.map((warning, i) => (
-                              <li key={i}>{warning}</li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
-
-                      <div className="space-y-3 bg-gray-50 rounded-md p-4">
-                        <div>
-                          <span className="text-sm font-medium text-gray-600">Category:</span>
-                          <span className="ml-2 text-sm text-gray-900 capitalize">{aiParsedData.category}</span>
-                        </div>
-                        <div>
-                          <span className="text-sm font-medium text-gray-600">Amount:</span>
-                          <span className="ml-2 text-sm text-gray-900">${aiParsedData.amount}</span>
-                        </div>
-                        <div>
-                          <span className="text-sm font-medium text-gray-600">Description:</span>
-                          <p className="text-sm text-gray-900 mt-1">{aiParsedData.description}</p>
-                        </div>
-                        <div>
-                          <span className="text-sm font-medium text-gray-600">AI Confidence:</span>
-                          <span className="ml-2 text-sm text-gray-900">{Math.round(aiParsedData.confidence * 100)}%</span>
-                        </div>
-                      </div>
-
-                      <div className="mt-4 flex gap-3">
-                        <button
-                          onClick={() => {
-                            setAiParsedData(null);
-                            setAiMessage('');
-                          }}
-                          className="flex-1 bg-gray-200 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-300 transition-colors"
-                        >
-                          ❌ Clear & Retry
-                        </button>
-                        <button
-                          onClick={handleCreateRequest}
-                          className="flex-1 bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 transition-colors font-medium"
-                        >
-                          ✅ Confirm & Submit
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              ) : (
-                /* Manual Mode */
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Category
-                    </label>
-                    <select
-                      value={reqCategory}
-                      onChange={(e) => setReqCategory(e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                    >
-                      <option value="">Select category...</option>
-                      <option value="travel">Travel</option>
-                      <option value="students">Students</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Amount
-                    </label>
-                    <input
-                      type="number"
-                      value={reqAmount}
-                      onChange={(e) => setReqAmount(e.target.value)}
-                      step="0.01"
-                      min="0"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                      placeholder="0.00"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Description
-                    </label>
-                    <textarea
-                      value={reqDescription}
-                      onChange={(e) => setReqDescription(e.target.value)}
-                      rows={4}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                      placeholder="Provide details about this spending request..."
-                    />
-                  </div>
-
-                  <button
-                    onClick={handleCreateRequest}
-                    className="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 transition-colors font-medium"
-                  >
-                    Submit Request
-                  </button>
-                </div>
-              )}
             </div>
           </div>
         )}

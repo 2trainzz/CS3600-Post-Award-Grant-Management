@@ -1,17 +1,17 @@
 {
   "name": "budget-electron-app",
   "private": true,
-  "main": "dist-electron/main.cjs",
-  "type": "module",
+  "main": "dist-electron/main.js",
   "version": "0.0.0",
   "scripts": {
-    "dev": "concurrently \"npm run dev:vite\" \"npm run dev:electron\"",
+    "dev": "concurrently \"npm run dev:vite\" \"npm run dev:electron\" \"npm run dev:server\"",
     "dev:vite": "vite",
     "dev:electron": "wait-on http://localhost:5173 && cross-env NODE_ENV=development electron .",
+    "dev:server": "tsx watch server/server.ts",
     "devStart": "nodemon server.ts",
     "build": "npm run build:vite && npm run build:electron && npm run build:server",
     "build:vite": "vite build",
-    "build:electron": "tsc electron/main.ts --outDir dist-electron --module commonjs --target ES2020 --esModuleInterop --skipLibCheck && mv dist-electron/main.js dist-electron/main.cjs",
+    "build:electron": "tsc electron/main.ts --outDir dist-electron --module commonjs --target ES2020 --esModuleInterop --skipLibCheck",
     "build:server": "tsc server/server.ts --outDir dist-server --module commonjs --target ES2020 --esModuleInterop --skipLibCheck",
     "prisma:generate": "npx prisma generate",
     "prisma:migrate": "npx prisma migrate dev",
@@ -23,6 +23,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@google/generative-ai": "^0.24.1",
     "@prisma/client": "^6.16.3",
     "bcrypt": "^6.0.0",
     "cors": "^2.8.5",
