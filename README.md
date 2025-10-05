@@ -8,3 +8,5 @@ This full stack application aims to help solve this problem. The use should be a
 
 This app uses React, Vite and Electron for the front end. The backend is supported via Express js API. It also uses Prisma (an ORM) to contact the database in MySQL. Lastly, it utilizes Gemini Flash 2.5 as the LLM and Google AI SDK as the API for the LLM.
 
+to build app: npm run dev
+to see prisma schema: npm run prisma:studio
