@@ -1,6 +1,6 @@
 # CS3600-Post-Award-Grant-Management
 
-This is a project for Professor Hasan Jamil's CS3600 Databases class.
+This is a project for Professor Hasan Jamil's CS3600 Databases class. Carla Kolze and Amanda Board work on this project together.
 
 This project is for post-award grant management. After a grant is awarded to a professor, the spending requests can be complicated to keep track of and approve.
 
