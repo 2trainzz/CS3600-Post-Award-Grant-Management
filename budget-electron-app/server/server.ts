@@ -1,12 +1,32 @@
 import express from 'express';
-import bcrypt from 'bcrypt';
-import prisma from './prisma';
+//import bcrypt from 'bcrypt';
+//import prisma from './prisma';
+import cors from 'cors';
+
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 
 app.use(express.json());
+app.use(cors());
 
+//beginner code to show electron works
+app.get('/api/hello', (_req, res) => {
+  res.json({ message: 'Hello from Express!' });
+});
+
+app.get('/api/data', (_req, res) => {
+  res.json({ 
+    data: ['Yippee!', 'It works', 'For this!'],
+    timestamp: new Date().toISOString()
+  });
+});
+
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
+
+/*
 // Simple session storage (in production, use proper session management)
 const sessions = new Map<string, number>(); // token -> userId
 
@@ -133,10 +153,11 @@ app.get('/api/grants/:id', authenticate, async (req: any, res) => {
     
     const grant = await prisma.grant.findUnique({
       where: { id: grantId },
-      include: {
-        rules: true,
-        fringeRates: true
-      }
+      
+      //include: {
+      //  rules: true,
+      //  fringeRates: true
+      //} 
     });
     
     res.json({ grant });
@@ -437,6 +458,7 @@ app.post('/api/spending-requests/:id/rules-fringes', authenticate, async (req: a
   }
 });
 
+/*
 // Get applicable rules for a grant
 app.get('/api/grants/:id/rules', authenticate, async (req: any, res) => {
   try {
@@ -503,7 +525,7 @@ app.get('/api/grants/:id/fringe-rates', authenticate, async (req: any, res) => {
         ]
       }
     });
-    
+     
     res.json({ fringeRates });
   } catch (error: any) {
     res.status(400).json({ error: error.message });
@@ -513,3 +535,4 @@ app.get('/api/grants/:id/fringe-rates', authenticate, async (req: any, res) => {
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
+*/
