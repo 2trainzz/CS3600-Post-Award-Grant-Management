@@ -1,0 +1,70 @@
+{
+  "name": "budget-electron-app",
+  "private": true,
+  "main": "dist-electron/main.js",
+  "version": "0.0.0",
+  "scripts": {
+    "dev": "concurrently \"npm run dev:vite\" \"npm run dev:electron\"",
+    "dev:vite": "vite",
+    "dev:electron": "wait-on http://localhost:5173 && cross-env NODE_ENV=development electron .",
+    "build": "npm run build:vite && npm run build:electron && npm run build:server",
+    "build:vite": "vite build",
+    "build:electron": "tsc electron/main.ts --outDir dist-electron --module commonjs --target ES2020 --esModuleInterop --skipLibCheck",
+    "build:server": "tsc server/server.ts --outDir dist-server --module commonjs --target ES2020 --esModuleInterop --skipLibCheck",
+    "prisma:generate": "npx prisma generate",
+    "prisma:migrate": "npx prisma migrate dev",
+    "prisma:studio": "npx prisma studio",
+    "electron": "electron .",
+    "pack": "npm run build && electron-builder --dir",
+    "dist": "npm run build && electron-builder",
+    "lint": "eslint .",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.16.3",
+    "bcrypt": "^6.0.0",
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.36.0",
+    "@types/bcrypt": "^6.0.0",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.3",
+    "@types/node": "^24.6.2",
+    "@types/react": "^19.1.16",
+    "@types/react-dom": "^19.1.9",
+    "@vitejs/plugin-react": "^5.0.4",
+    "concurrently": "^9.2.1",
+    "cross-env": "^10.1.0",
+    "electron": "^38.2.1",
+    "electron-builder": "^26.0.12",
+    "eslint": "^9.36.0",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-react-refresh": "^0.4.22",
+    "globals": "^16.4.0",
+    "prisma": "^6.16.3",
+    "ts-node": "^10.9.2",
+    "tsx": "^4.20.6",
+    "typescript": "~5.9.3",
+    "typescript-eslint": "^8.45.0",
+    "vite": "^7.1.7",
+    "wait-on": "^9.0.1"
+  },
+  "build": {
+    "appId": "com.budget.electron",
+    "files": [
+      "dist/**/*",
+      "dist-electron/**/*",
+      "dist-server/**/*"
+    ],
+    "directories": {
+      "output": "release"
+    }
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
+  }
+}

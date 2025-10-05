@@ -1,0 +1,159 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id         Int    @id @default(autoincrement())
+  username   String @unique
+  password   String // will store hashed pass
+  email      String @unique
+  firstName  String
+  lastName   String
+  role       String @default("user") //eg user, admin, approver
+  department String @default("computer science")
+
+  //many-to-many relationships with grants
+  userGrants UserGrant[]
+
+  //spending requests and grants relationship
+  useGrantRequests UserGrantRequest[]
+
+  @@map("users")
+}
+
+model Grant {
+  id              Int      @id @default(autoincrement())
+  grantNumber     String   @unique
+  grantName       String
+  totalAmount     Decimal  @db.Decimal(15, 2)
+  remainingAmount Decimal  @db.Decimal(15, 2)
+  studentBalance  Decimal  @db.Decimal(15, 2)
+  travelBalance   Decimal  @db.Decimal(15, 2)
+  startDate       DateTime
+  endDate         DateTime
+  status          String   @default("active") // "active", "completed", "suspended"
+  description     String?  @db.Text
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Many-to-many relationship with users
+  userGrants UserGrant[]
+
+  // Spending requests for this grant
+  userGrantRequests UserGrantRequest[]
+
+  @@map("grants")
+}
+
+model SpendingRequest {
+  id          Int       @id @default(autoincrement())
+  amount      Decimal   @db.Decimal(15, 2)
+  category    String // "travel" "students"
+  description String    @db.Text
+  status      String    @default("pending") // "pending", "approved", "rejected", "completed"
+  requestDate DateTime  @default(now())
+  reviewDate  DateTime?
+  reviewedBy  Int?
+  reviewNotes String?   @db.Text
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  //users and grants relationship
+  userGrantRequests UserGrantRequest[]
+
+  //rules and rates
+  requestRuleFringes RequestRuleFringe[]
+
+  @@index([status])
+  @@map("spending_requests")
+}
+
+model Rule {
+  id           Int    @id @default(autoincrement())
+  ruleType     String //eg "spending_limit", "category_restrication"
+  policyHolder String //eg "federal" or "university"
+  description  String @db.Text
+
+  //spending request, rules and rates relationship
+  requestRuleFringes RequestRuleFringe[]
+
+  @@map("rules")
+}
+
+model FringeRate {
+  id          Int     @id @default(autoincrement())
+  description String //eg "travel" "employee cost"
+  rate        Decimal @db.Decimal(5, 2) //percentage
+
+  //spending request, rules and rates relationship
+  requestRuleFringes RequestRuleFringe[]
+
+  @@map("fringe_rates")
+}
+
+//table for user-grant relationship
+model UserGrant {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  grantId   Int
+  role      String   @default("member") // "owner", "admin", "member", "viewer"
+  createdAt DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  grant Grant @relation(fields: [grantId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, grantId])
+  @@map("user_grants")
+}
+
+//table for user-grant-spendrequest relationship
+model UserGrantRequest {
+  id                Int      @id @default(autoincrement())
+  userId            Int
+  grantId           Int
+  spendingRequestId Int
+  role              String? // e.g., "creator", "approver", "reviewer"
+  createdAt         DateTime @default(now())
+
+  user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  grant           Grant           @relation(fields: [grantId], references: [id], onDelete: Cascade)
+  spendingRequest SpendingRequest @relation(fields: [spendingRequestId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, grantId, spendingRequestId])
+  @@index([userId])
+  @@index([grantId])
+  @@index([spendingRequestId])
+  @@map("user_grant_requests")
+}
+
+//table for requests-rules-fringerates relationship
+model RequestRuleFringe {
+  id                Int      @id @default(autoincrement())
+  spendingRequestId Int
+  ruleId            Int
+  fringeRateId      Int
+  appliedAmount     Decimal? @db.Decimal(15, 2) // Amount this rule/fringe applies to
+  notes             String?  @db.Text
+  createdAt         DateTime @default(now())
+
+  spendingRequest SpendingRequest @relation(fields: [spendingRequestId], references: [id], onDelete: Cascade)
+  rule            Rule            @relation(fields: [ruleId], references: [id], onDelete: Cascade)
+  fringeRate      FringeRate      @relation(fields: [fringeRateId], references: [id], onDelete: Cascade)
+
+  @@unique([spendingRequestId, ruleId, fringeRateId])
+  @@index([spendingRequestId])
+  @@index([ruleId])
+  @@index([fringeRateId])
+  @@map("request_rule_fringes")
+}
