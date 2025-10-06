@@ -10,3 +10,9 @@ This app uses React, Vite and Electron for the front end. The backend is support
 
 to build app: npm run dev
 to see prisma schema: npm run prisma:studio
+
+
+
+
+dependencies:
+mysql: https://pen-y-fan.github.io/2021/08/08/How-to-install-MySQL-on-WSL-2-Ubuntu/ 
