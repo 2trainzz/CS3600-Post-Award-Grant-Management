@@ -10,3 +10,5 @@ This app uses React, Vite and Electron for the front end. The backend is support
 
 to build app: npm run dev
 to see prisma schema: npm run prisma:studio
+
+update db: npx prisma migrate dev
