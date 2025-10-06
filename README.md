@@ -16,3 +16,5 @@ to see prisma schema: npm run prisma:studio
 
 dependencies:
 mysql: https://pen-y-fan.github.io/2021/08/08/How-to-install-MySQL-on-WSL-2-Ubuntu/ 
+
+api key: https://aistudio.google.com/api-keys
