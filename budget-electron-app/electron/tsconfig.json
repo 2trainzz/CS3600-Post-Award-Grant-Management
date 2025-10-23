@@ -1,14 +1,16 @@
 {
-  // TypeScript configuration for Express server
+  // TypeScript configuration for Electron main process
+  // This extends the root tsconfig.json but with Node-specific settings
+  
   "extends": "../tsconfig.json",
   "compilerOptions": {
     // Output directory for compiled JavaScript
-    "outDir": "../dist-server",
+    "outDir": "../dist-electron",
     
     // Use CommonJS for Node.js compatibility
     "module": "CommonJS",
     
-    // Target modern Node.js
+    // Target modern Node.js (Electron uses recent Node versions)
     "target": "ES2020",
     
     // Enable all strict type-checking options
@@ -26,39 +28,32 @@
     // Allow importing JSON files
     "resolveJsonModule": true,
     
+    // Enable decorators (if you use them)
+    "experimentalDecorators": true,
+    
     // Module resolution strategy
     "moduleResolution": "node",
     
-    // Include type definitions
+    // Include type definitions for Node.js
     "types": ["node"],
     
     // Source map generation for debugging
     "sourceMap": true,
     
-    // Emit declaration files
-    "declaration": false,
-    
     // Don't emit outputs if any type errors are present
     "noEmitOnError": true,
     
-    // Report errors for unused locals
+    // Disallow unused local variables
     "noUnusedLocals": true,
     
-    // Report errors for unused parameters
+    // Disallow unused parameters
     "noUnusedParameters": true,
     
-    // Base URL for path mapping
-    "baseUrl": ".",
+    // Enable strict null checks
+    "strictNullChecks": true,
     
-    // Path mapping for clean imports
-    "paths": {
-      "@/*": ["./*"],
-      "@routes/*": ["./routes/*"],
-      "@services/*": ["./services/*"],
-      "@middleware/*": ["./middleware/*"],
-      "@utils/*": ["./utils/*"],
-      "@types/*": ["./types/*"]
-    }
+    // Enable strict function types
+    "strictFunctionTypes": true
   },
   
   // Files to include in compilation
@@ -69,6 +64,6 @@
   // Files to exclude from compilation
   "exclude": [
     "node_modules",
-    "dist-server"
+    "dist-electron"
   ]
 }
