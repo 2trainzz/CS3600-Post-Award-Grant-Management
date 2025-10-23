@@ -1,7 +1,7 @@
 /**
  * Authentication Routes
  * 
- * Extracted from your original server.ts
+ * from original server.ts
  * Handles /api/auth/* endpoints - SAME LOGIC, just organized
  */
 

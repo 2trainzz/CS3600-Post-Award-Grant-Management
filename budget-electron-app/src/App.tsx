@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import './App.css';
 import './types/index.ts'
 
-const API_BASE = 'http://localhost:3001/api';
+import { API_BASE } from './config/constants';
 
 function App() {
   const [token, setToken] = useState(null);
@@ -87,7 +87,7 @@ function App() {
   // Fetch spending requests
   const fetchSpendingRequests = async () => {
     try {
-      const res = await fetch(`${API_BASE}/spending-requests`, {
+      const res = await fetch(`${API_BASE}/ai/parse-spending-request`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await res.json();
@@ -108,7 +108,7 @@ function App() {
     setError('');
     
     try {
-      const res = await fetch(`${API_BASE}/spending-requests/ai-parse`, {
+      const res = await fetch(`${API_BASE}/ai/parse-spending-request`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -151,7 +151,7 @@ function App() {
     }
     
     try {
-      const res = await fetch(`${API_BASE}/spending-requests`, {
+      const res = await fetch(`${API_BASE}/ai/parse-spending-request`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,

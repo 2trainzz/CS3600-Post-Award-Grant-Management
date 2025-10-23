@@ -1,7 +1,7 @@
 /**
  * Grants Routes
  * 
- * Extracted from your original server.ts
+ * from original server.ts
  * Handles /api/grants/* endpoints - SAME LOGIC, just organized
  */
 
