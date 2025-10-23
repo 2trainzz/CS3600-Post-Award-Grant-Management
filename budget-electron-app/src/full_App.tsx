@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import './App.css';
 
 const API_BASE = 'http://localhost:3001/api';
 
