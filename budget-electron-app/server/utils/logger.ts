@@ -1,111 +1,43 @@
 /**
- * Logger Utility
+ * Simple Logger Utility
  * 
- * Simple structured logging utility for the server
- * In production, you might want to use Winston or Pino for more features
+ * Just wraps console.log with timestamps and categories
+ * No external dependencies, drop-in replacement for console.log
  */
 
-enum LogLevel {
-  DEBUG = 0,
-  INFO = 1,
-  WARN = 2,
-  ERROR = 3,
-}
-
 class Logger {
-  private minLevel: LogLevel;
-  private isDev: boolean;
-
-  constructor() {
-    this.isDev = process.env.NODE_ENV === 'development';
-    // In development, log everything. In production, only info and above
-    this.minLevel = this.isDev ? LogLevel.DEBUG : LogLevel.INFO;
-  }
-
   /**
-   * Format a log message with timestamp and level
+   * Format a log message with timestamp
    */
-  private format(level: string, message: string, meta?: any): string {
+  private format(level: string, message: string, data?: any): string {
     const timestamp = new Date().toISOString();
-    const metaStr = meta ? ` ${JSON.stringify(meta)}` : '';
-    return `[${timestamp}] [${level}] ${message}${metaStr}`;
-  }
-
-  /**
-   * Log debug messages (development only)
-   * Usage: logger.debug('User query executed', { userId: 123 });
-   */
-  debug(message: string, meta?: any): void {
-    if (this.minLevel <= LogLevel.DEBUG) {
-      console.log(this.format('DEBUG', message, meta));
-    }
+    const dataStr = data ? ` ${JSON.stringify(data)}` : '';
+    return `[${timestamp}] [${level}] ${message}${dataStr}`;
   }
 
   /**
    * Log informational messages
-   * Usage: logger.info('Server started', { port: 3001 });
    */
-  info(message: string, meta?: any): void {
-    if (this.minLevel <= LogLevel.INFO) {
-      console.log(this.format('INFO', message, meta));
-    }
-  }
-
-  /**
-   * Log warning messages
-   * Usage: logger.warn('Rate limit approaching', { userId: 123 });
-   */
-  warn(message: string, meta?: any): void {
-    if (this.minLevel <= LogLevel.WARN) {
-      console.warn(this.format('WARN', message, meta));
-    }
+  info(message: string, data?: any): void {
+    console.log(this.format('INFO', message, data));
   }
 
   /**
    * Log error messages
-   * Usage: logger.error('Database query failed', { error: err.message });
    */
-  error(message: string, meta?: any): void {
-    if (this.minLevel <= LogLevel.ERROR) {
-      console.error(this.format('ERROR', message, meta));
-    }
+  error(message: string, data?: any): void {
+    console.error(this.format('ERROR', message, data));
   }
 
   /**
-   * Log HTTP requests
-   * Usage: logger.http('GET /api/grants', { userId: 123, duration: 45 });
+   * Log debug messages (only in development)
    */
-  http(message: string, meta?: any): void {
-    if (this.isDev) {
-      console.log(this.format('HTTP', message, meta));
+  debug(message: string, data?: any): void {
+    if (process.env.NODE_ENV === 'development') {
+      console.log(this.format('DEBUG', message, data));
     }
   }
 }
 
 // Export singleton instance
 export const logger = new Logger();
-
-/**
- * Express middleware for request logging
- * Usage: app.use(requestLogger);
- */
-export function requestLogger(req: any, res: any, next: any): void {
-  const start = Date.now();
-  
-  // Log when response finishes
-  res.on('finish', () => {
-    const duration = Date.now() - start;
-    const message = `${req.method} ${req.originalUrl}`;
-    
-    logger.http(message, {
-      method: req.method,
-      path: req.originalUrl,
-      status: res.statusCode,
-      duration: `${duration}ms`,
-      userId: req.userId || null,
-      ip: req.ip,
-    });
-  });
-  
-  next();
-}

@@ -1,113 +1,60 @@
 /**
  * Authentication Routes
  * 
- * Endpoints:
- * - POST /api/auth/register - Register new user
- * - POST /api/auth/login - Login and get token
- * - POST /api/auth/logout - Logout (optional for JWT)
- * - GET /api/auth/profile - Get current user profile
- * - PUT /api/auth/password - Change password
+ * Extracted from your original server.ts
+ * Handles /api/auth/* endpoints - SAME LOGIC, just organized
  */
 
 import { Router } from 'express';
-import { 
-  register, 
-  login, 
-  getUserProfile,
-  changePassword 
-} from '../services/auth.service';
-
+import { register, login, logout } from '../services/auth.service';
 import { authenticate } from '../middleware/auth.middleware';
-import { 
-  validateLogin, 
-  validateRegister 
-} from '../middleware/validation.middleware';
-import { asyncHandler } from '../middleware/errorHandler.middleware';
 
 const router = Router();
 
 /**
  * POST /api/auth/register
- * Register a new user account
- * 
- * Body: { username, password, email, firstName, lastName }
- * Returns: { token, user }
+ * Register a new user
+ * (Same as your original code)
  */
-router.post(
-  '/register',
-  validateRegister,
-  asyncHandler(async (req, res) => {
-    const result = await register(req.body);
-    res.status(201).json(result);
-  })
-);
+router.post('/register', async (req, res) => {
+  try {
+    const { username, password, email, firstName, lastName } = req.body;
+    const result = await register({ username, password, email, firstName, lastName });
+    res.json(result);
+  } catch (error: any) {
+    res.status(400).json({ error: error.message });
+  }
+});
 
 /**
  * POST /api/auth/login
- * Authenticate user and receive JWT token
- * 
- * Body: { username, password }
- * Returns: { token, user }
+ * Login and get session token
+ * (Same as your original code)
  */
-router.post(
-  '/login',
-  validateLogin,
-  asyncHandler(async (req, res) => {
-    const result = await login(req.body);
+router.post('/login', async (req, res) => {
+  try {
+    const { username, password } = req.body;
+    const result = await login({ username, password });
     res.json(result);
-  })
-);
+  } catch (error: any) {
+    res.status(401).json({ error: error.message });
+  }
+});
 
 /**
  * POST /api/auth/logout
- * Logout user (for JWT, this is mainly client-side)
- * Server can optionally maintain a blacklist
- * 
- * Headers: Authorization: Bearer <token>
- * Returns: { message }
+ * Logout (delete session)
+ * (Same as your original code)
  */
-router.post(
-  '/logout',
-  authenticate,
-  asyncHandler(async (req, res) => {
-    // For JWT, logout is handled client-side by removing the token
-    // Optionally implement token blacklist here if needed
-    res.json({ message: 'Logged out successfully' });
-  })
-);
-
-/**
- * GET /api/auth/profile
- * Get current user's profile
- * 
- * Headers: Authorization: Bearer <token>
- * Returns: { user }
- */
-router.get(
-  '/profile',
-  authenticate,
-  asyncHandler(async (req, res) => {
-    const user = await getUserProfile(req.userId!);
-    res.json({ user });
-  })
-);
-
-/**
- * PUT /api/auth/password
- * Change user password
- * 
- * Headers: Authorization: Bearer <token>
- * Body: { currentPassword, newPassword }
- * Returns: { message }
- */
-router.put(
-  '/password',
-  authenticate,
-  asyncHandler(async (req, res) => {
-    const { currentPassword, newPassword } = req.body;
-    await changePassword(req.userId!, currentPassword, newPassword);
-    res.json({ message: 'Password changed successfully' });
-  })
-);
+router.post('/logout', authenticate, async (req, res) => {
+  try {
+    if (req.token) {
+      await logout(req.token);
+    }
+    res.json({ message: 'Logged out' });
+  } catch (error: any) {
+    res.status(400).json({ error: error.message });
+  }
+});
 
 export default router;

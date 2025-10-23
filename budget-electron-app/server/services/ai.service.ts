@@ -12,7 +12,7 @@ import {
   BadRequestError 
 } from '../utils/errors';
 import { logger } from '../utils/logger';
-import { verifyGrantAccess } from './grants.service';
+import { checkGrantAccess } from './grants.service';
 
 // Initialize Gemini AI client
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
@@ -55,7 +55,7 @@ export async function parseSpendingRequest(
   });
 
   // Verify user has access to the grant
-  await verifyGrantAccess(grantId, userId);
+  await checkGrantAccess(grantId, userId);
 
   // Fetch grant details for context
   const grant = await prisma.grant.findUnique({

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import './App.css';
+import './types/index.ts'
 
 const API_BASE = 'http://localhost:3001/api';
 

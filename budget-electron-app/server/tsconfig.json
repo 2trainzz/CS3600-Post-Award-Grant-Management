@@ -63,6 +63,7 @@
   
   // Files to include in compilation
   "include": [
+    "./types/express.d.ts",
     "**/*.ts"
   ],
   

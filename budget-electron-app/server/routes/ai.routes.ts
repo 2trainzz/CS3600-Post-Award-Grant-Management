@@ -12,8 +12,7 @@ import {
   suggestDescriptionImprovement,
 } from '../services/ai.service';
 import { authenticate } from '../middleware/auth.middleware';
-import { validateAiParse } from '../middleware/validation.middleware';
-import { asyncHandler } from '../middleware/errorHandler.middleware';
+//import { validateAiParse } from '../middleware/validation.middleware';
 
 const router = Router();
 
@@ -31,11 +30,7 @@ const router = Router();
  *   "userMessage": "I need $2500 for travel to the ACM conference in Seattle next month"
  * }
  */
-router.post(
-  '/parse-spending-request',
-  authenticate,
-  validateAiParse,
-  asyncHandler(async (req, res) => {
+router.post('/parse-spending-request', authenticate, async (req, res) => {
     const { grantId, userMessage } = req.body;
     const parsed = await parseSpendingRequest(
       userMessage,
@@ -43,8 +38,7 @@ router.post(
       req.userId!
     );
     res.json({ parsed });
-  })
-);
+});
 
 /**
  * POST /api/ai/suggest-description
@@ -54,17 +48,13 @@ router.post(
  * Body: { description, category }
  * Returns: { suggestions: ["...", "...", "..."] }
  */
-router.post(
-  '/suggest-description',
-  authenticate,
-  asyncHandler(async (req, res) => {
+router.post('/suggest-description', authenticate, async (req, res) => {
     const { description, category } = req.body;
     const suggestions = await suggestDescriptionImprovement(
       description,
       category
     );
     res.json({ suggestions });
-  })
-);
+});
 
 export default router;

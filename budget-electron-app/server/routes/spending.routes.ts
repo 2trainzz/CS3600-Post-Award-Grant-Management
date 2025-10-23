@@ -1,13 +1,8 @@
 /**
- * Spending Request Routes
+ * Spending Requests Routes
  * 
- * Endpoints:
- * - POST /api/spending-requests - Create new spending request
- * - GET /api/spending-requests - Get user's spending requests
- * - GET /api/spending-requests/:id - Get specific spending request
- * - PUT /api/spending-requests/:id/status - Update request status
- * - POST /api/spending-requests/:id/rules-fringes - Add rules/rates
- * - GET /api/grants/:id/spending-requests - Get grant's spending requests
+ * Extracted from your original server.ts
+ * Handles /api/spending-requests/* endpoints - SAME LOGIC, just organized
  */
 
 import { Router } from 'express';
@@ -16,127 +11,119 @@ import {
   getUserSpendingRequests,
   getGrantSpendingRequests,
   getSpendingRequestDetails,
-  updateSpendingRequestStatus,
+  addUserToSpendingRequest,
   addRuleFringeToRequest,
 } from '../services/spending.service';
 import { authenticate } from '../middleware/auth.middleware';
-import {
-  validateIdParam,
-  validateCreateSpendingRequest,
-} from '../middleware/validation.middleware';
-import { asyncHandler } from '../middleware/errorHandler.middleware';
 
 const router = Router();
 
 /**
  * POST /api/spending-requests
  * Create a new spending request
- * 
- * Headers: Authorization: Bearer <token>
- * Body: { grantId, amount, category, description, ruleIds?, fringeRateIds? }
- * Returns: { spendingRequest: {...} }
+ * (Same as your original code)
  */
-router.post(
-  '/',
-  authenticate,
-  validateCreateSpendingRequest,
-  asyncHandler(async (req, res) => {
+router.post('/', authenticate, async (req, res) => {
+  try {
+    const { grantId, amount, category, description, ruleIds, fringeRateIds } = req.body;
     const spendingRequest = await createSpendingRequest(
-      req.body,
+      { grantId, amount, category, description, ruleIds, fringeRateIds },
       req.userId!
     );
-    res.status(201).json({ spendingRequest });
-  })
-);
+    res.json({ spendingRequest });
+  } catch (error: any) {
+    if (error.message === 'Access denied to this grant') {
+      res.status(403).json({ error: error.message });
+    } else {
+      res.status(400).json({ error: error.message });
+    }
+  }
+});
 
 /**
  * GET /api/spending-requests
  * Get all spending requests for the authenticated user
- * 
- * Headers: Authorization: Bearer <token>
- * Returns: { requests: [...] }
+ * (Same as your original code)
  */
-router.get(
-  '/',
-  authenticate,
-  asyncHandler(async (req, res) => {
+router.get('/', authenticate, async (req, res) => {
+  try {
     const requests = await getUserSpendingRequests(req.userId!);
     res.json({ requests });
-  })
-);
+  } catch (error: any) {
+    res.status(400).json({ error: error.message });
+  }
+});
 
 /**
  * GET /api/spending-requests/:id
  * Get detailed information about a specific spending request
- * 
- * Headers: Authorization: Bearer <token>
- * Params: id - Spending request ID
- * Returns: { spendingRequest: {...} }
+ * (Same as your original code)
  */
-router.get(
-  '/:id',
-  authenticate,
-  validateIdParam,
-  asyncHandler(async (req, res) => {
-    const spendingRequest = await getSpendingRequestDetails(
-      parseInt(req.params.id),
-      req.userId!
-    );
+router.get('/:id', authenticate, async (req, res) => {
+  try {
+    const requestId = parseInt(req.params.id);
+    const spendingRequest = await getSpendingRequestDetails(requestId, req.userId!);
     res.json({ spendingRequest });
-  })
-);
+  } catch (error: any) {
+    if (error.message === 'Access denied to this request') {
+      res.status(403).json({ error: error.message });
+    } else {
+      res.status(400).json({ error: error.message });
+    }
+  }
+});
 
 /**
- * PUT /api/spending-requests/:id/status
- * Update spending request status (approve/reject)
- * Only grant owners/admins can do this
- * 
- * Headers: Authorization: Bearer <token>
- * Params: id - Spending request ID
- * Body: { status, reviewNotes? }
- * Returns: { spendingRequest: {...} }
+ * POST /api/spending-requests/:id/users
+ * Add a user to an existing spending request
+ * (Same as your original code)
  */
-router.put(
-  '/:id/status',
-  authenticate,
-  validateIdParam,
-  asyncHandler(async (req, res) => {
-    const { status, reviewNotes } = req.body;
-    const spendingRequest = await updateSpendingRequestStatus(
-      parseInt(req.params.id),
-      status,
-      reviewNotes,
+router.post('/:id/users', authenticate, async (req, res) => {
+  try {
+    const requestId = parseInt(req.params.id);
+    const { userId, grantId, role } = req.body;
+    const userGrantRequest = await addUserToSpendingRequest(
+      requestId,
+      userId,
+      grantId,
+      role,
       req.userId!
     );
-    res.json({ spendingRequest });
-  })
-);
+    res.json({ userGrantRequest });
+  } catch (error: any) {
+    if (error.message === 'Access denied') {
+      res.status(403).json({ error: error.message });
+    } else {
+      res.status(400).json({ error: error.message });
+    }
+  }
+});
 
 /**
  * POST /api/spending-requests/:id/rules-fringes
- * Add rules and fringe rates to a spending request
- * 
- * Headers: Authorization: Bearer <token>
- * Params: id - Spending request ID
- * Body: { ruleId, fringeRateId, appliedAmount?, notes? }
- * Returns: { requestRuleFringe: {...} }
+ * Link rules and fringe rates to a spending request
+ * (Same as your original code)
  */
-router.post(
-  '/:id/rules-fringes',
-  authenticate,
-  validateIdParam,
-  asyncHandler(async (req, res) => {
+router.post('/:id/rules-fringes', authenticate, async (req, res) => {
+  try {
+    const requestId = parseInt(req.params.id);
     const { ruleId, fringeRateId, appliedAmount, notes } = req.body;
     const requestRuleFringe = await addRuleFringeToRequest(
-      parseInt(req.params.id),
+      requestId,
       ruleId,
       fringeRateId,
       appliedAmount,
       notes,
       req.userId!
     );
-    res.status(201).json({ requestRuleFringe });
-  })
-);
+    res.json({ requestRuleFringe });
+  } catch (error: any) {
+    if (error.message === 'Access denied') {
+      res.status(403).json({ error: error.message });
+    } else {
+      res.status(400).json({ error: error.message });
+    }
+  }
+});
 
 export default router;

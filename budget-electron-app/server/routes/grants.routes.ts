@@ -1,147 +1,69 @@
 /**
  * Grants Routes
  * 
- * Endpoints:
- * - GET /api/grants - Get user's grants
- * - GET /api/grants/:id - Get grant details
- * - POST /api/grants - Create new grant (admin only)
- * - GET /api/grants/:id/rules - Get applicable rules
- * - GET /api/grants/:id/fringe-rates - Get applicable fringe rates
- * - POST /api/grants/:id/users - Add user to grant
+ * Extracted from your original server.ts
+ * Handles /api/grants/* endpoints - SAME LOGIC, just organized
  */
 
 import { Router } from 'express';
-import {
-  getUserGrants,
-  getGrantDetails,
-  createGrant,
-  getAllRules,
-  getAllFringeRates,
-  addUserToGrant,
-} from '../services/grants.service';
-import { 
-  authenticate, 
-  requireRole 
-} from '../middleware/auth.middleware';
-import {
-  validateIdParam,
-  validateCreateGrant,
-} from '../middleware/validation.middleware';
-import { asyncHandler } from '../middleware/errorHandler.middleware';
+import { getUserGrants, getGrantDetails } from '../services/grants.service';
+import { getGrantSpendingRequests } from '../services/spending.service';
+import { authenticate } from '../middleware/auth.middleware';
 
 const router = Router();
 
 /**
  * GET /api/grants
- * Get all grants the authenticated user has access to
- * 
- * Headers: Authorization: Bearer <token>
- * Returns: { grants: [...] }
+ * Get all grants for the authenticated user
+ * (Same as your original code)
  */
-router.get(
-  '/',
-  authenticate,
-  asyncHandler(async (req, res) => {
+router.get('/', authenticate, async (req, res) => {
+  try {
     const grants = await getUserGrants(req.userId!);
     res.json({ grants });
-  })
-);
+  } catch (error: any) {
+    res.status(400).json({ error: error.message });
+  }
+});
 
 /**
  * GET /api/grants/:id
  * Get detailed information about a specific grant
- * 
- * Headers: Authorization: Bearer <token>
- * Params: id - Grant ID
- * Returns: { grant: {...} }
+ * (Same as your original code)
  */
-router.get(
-  '/:id',
-  authenticate,
-  validateIdParam,
-  asyncHandler(async (req, res) => {
-    const grant = await getGrantDetails(
-      parseInt(req.params.id),
-      req.userId!
-    );
+router.get('/:id', authenticate, async (req, res) => {
+  try {
+    const grantId = parseInt(req.params.id);
+    const grant = await getGrantDetails(grantId, req.userId!);
     res.json({ grant });
-  })
-);
+  } catch (error: any) {
+    if (error.message === 'Access denied') {
+      res.status(403).json({ error: error.message });
+    } else if (error.message === 'Grant not found') {
+      res.status(404).json({ error: error.message });
+    } else {
+      res.status(400).json({ error: error.message });
+    }
+  }
+});
 
 /**
- * POST /api/grants
- * Create a new grant (admin only)
- * 
- * Headers: Authorization: Bearer <token>
- * Body: { grantNumber, grantName, totalAmount, studentBalance, travelBalance, startDate, endDate, description }
- * Returns: { grant: {...} }
+ * GET /api/grants/:id/spending-requests
+ * Get all spending requests for a specific grant
+ * (Same as your original code)
  */
-router.post(
-  '/',
-  authenticate,
-  requireRole(['admin']),
-  validateCreateGrant,
-  asyncHandler(async (req, res) => {
-    const grant = await createGrant(req.body, req.userId!);
-    res.status(201).json({ grant });
-  })
-);
-
-/**
- * GET /api/grants/rules
- * Get all available rules (global)
- * 
- * Headers: Authorization: Bearer <token>
- * Returns: { rules: [...] }
- */
-router.get(
-  '/rules/all',
-  authenticate,
-  asyncHandler(async (req, res) => {
-    const rules = await getAllRules();
-    res.json({ rules });
-  })
-);
-
-/**
- * GET /api/grants/fringe-rates
- * Get all available fringe rates
- * 
- * Headers: Authorization: Bearer <token>
- * Returns: { fringeRates: [...] }
- */
-router.get(
-  '/fringe-rates/all',
-  authenticate,
-  asyncHandler(async (req, res) => {
-    const fringeRates = await getAllFringeRates();
-    res.json({ fringeRates });
-  })
-);
-
-/**
- * POST /api/grants/:id/users
- * Add a user to a grant (owner/admin only)
- * 
- * Headers: Authorization: Bearer <token>
- * Params: id - Grant ID
- * Body: { userId, role }
- * Returns: { userGrant: {...} }
- */
-router.post(
-  '/:id/users',
-  authenticate,
-  validateIdParam,
-  asyncHandler(async (req, res) => {
-    const { userId, role } = req.body;
-    const userGrant = await addUserToGrant(
-      parseInt(req.params.id),
-      userId,
-      role,
-      req.userId!
-    );
-    res.status(201).json({ userGrant });
-  })
-);
+router.get('/:id/spending-requests', authenticate, async (req, res) => {
+  try {
+    const grantId = parseInt(req.params.id);
+    const requests = await getGrantSpendingRequests(grantId, req.userId!);
+    res.json({ requests });
+  } catch (error: any) {
+    if (error.message === 'Access denied') {
+      res.status(403).json({ error: error.message });
+    } else {
+      res.status(400).json({ error: error.message });
+    }
+  }
+});
 
 export default router;
