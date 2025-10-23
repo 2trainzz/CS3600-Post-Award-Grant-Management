@@ -262,6 +262,7 @@ export async function addRuleFringeToRequest(
     throw new Error('Access denied');
   }
 
+  //create request rule fringe relationship
   const requestRuleFringe = await prisma.requestRuleFringe.create({
     data: {
       spendingRequestId: requestId,
