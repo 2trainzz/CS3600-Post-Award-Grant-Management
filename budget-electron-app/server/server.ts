@@ -1,5 +1,4 @@
-/**
- * Express Server - Main Entry Point
+/* Express Server - Main Entry Point
  * 
  * route handlers in routes/
  * business logic in services/
@@ -27,13 +26,12 @@ const PORT = process.env.PORT || 3001;
 // MIDDLEWARE
 // ============================================================================
 
-// Parse JSON request bodies
+//parse JSON request bodies
 app.use(express.json());
 
-// Enable CORS
 app.use(cors());
 
-// Simple request logging
+//simple request logging
 app.use((req, res, next) => {
   logger.info(`${req.method} ${req.path}`);
   next();
@@ -58,7 +56,6 @@ app.get('/health', (req, res) => {
 // API ROUTES
 // ============================================================================
 
-// Mount all route modules under /api
 app.use('/api/auth', authRoutes);
 app.use('/api/grants', grantsRoutes);
 app.use('/api/spending-requests', spendingRoutes);
@@ -68,14 +65,14 @@ app.use('/api/ai', aiRoutes);
 // ERROR HANDLING
 // ============================================================================
 
-// Handle 404 for undefined routes
+//404 for undefined routes
 app.use((req, res) => {
   res.status(404).json({ 
     error: `Route ${req.method} ${req.path} not found` 
   });
 });
 
-// Global error handler
+//global error handler
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
   logger.error('Unhandled error', { error: err.message, stack: err.stack });
   res.status(500).json({ 

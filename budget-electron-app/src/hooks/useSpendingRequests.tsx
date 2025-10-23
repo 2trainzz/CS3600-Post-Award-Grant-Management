@@ -1,9 +1,4 @@
-/**
- * useSpendingRequests Hook
- * 
- * Extracted from App.tsx - handles spending requests data and AI parsing
- * Same logic, just organized into a reusable hook
- */
+//useSpendingRequests Hook - handles spending requests data and AI parsing
 
 import { useState } from 'react';
 import { 
@@ -18,14 +13,11 @@ export function useSpendingRequests() {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
 
-  // AI parsing state
+  //AI parsing state
   const [aiLoading, setAiLoading] = useState<boolean>(false);
   const [aiParsedData, setAiParsedData] = useState<AiParsedData | null>(null);
 
-  /**
-   * Load spending requests from API
-   * (Same logic as your fetchSpendingRequests in App.tsx)
-   */
+  //load spending requests from API
   const loadRequests = async (token: string) => {
     setLoading(true);
     setError('');
@@ -40,10 +32,7 @@ export function useSpendingRequests() {
     }
   };
 
-  /**
-   * Create a new spending request
-   * (Same logic as your handleCreateRequest in App.tsx)
-   */
+  //create new spending request
   const createRequest = async (
     token: string,
     requestData: {
@@ -64,10 +53,7 @@ export function useSpendingRequests() {
     }
   };
 
-  /**
-   * Parse request with AI
-   * (Same logic as your handleAiParse in App.tsx)
-   */
+  //parse request with AI
   const parseWithAI = async (
     token: string,
     grantId: number,
@@ -93,16 +79,12 @@ export function useSpendingRequests() {
     }
   };
 
-  /**
-   * Clear AI parsed data
-   */
+  //clear AI parsed data
   const clearAiData = () => {
     setAiParsedData(null);
   };
 
-  /**
-   * Clear error message
-   */
+  //clear err message
   const clearError = () => setError('');
 
   return {

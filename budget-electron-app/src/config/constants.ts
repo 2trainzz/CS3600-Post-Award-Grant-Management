@@ -1,9 +1,4 @@
-/**
- * Application Constants
- * 
- * Centralized configuration values
- * Extract hardcoded values from App.tsx
- */
+//application Constants - centralized configuration values
 
 // API Base URL - change this for different environments
 export const API_BASE = 'http://localhost:3001/api';

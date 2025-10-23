@@ -1,9 +1,5 @@
-/**
- * Navigation Component
- * 
- * Extracted from App.tsx - the navigation tabs
- * Same UI, just in its own component
- */
+//Navigation Component the navigation tabs
+
 
 import { VIEWS } from '../../config/constants';
 

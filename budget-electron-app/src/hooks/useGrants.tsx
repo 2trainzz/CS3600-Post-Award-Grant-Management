@@ -1,9 +1,4 @@
-/**
- * useGrants Hook
- * 
- * Extracted from App.tsx - handles grants data fetching
- * Same logic, just organized into a reusable hook
- */
+//useGrants Hook - handles grants data fetching
 
 import { useState } from 'react';
 import { fetchGrants } from '../services/api';
@@ -14,10 +9,7 @@ export function useGrants() {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
 
-  /**
-   * Load grants from API
-   * (Same logic as your fetchGrants in App.tsx)
-   */
+  //load grants from API
   const loadGrants = async (token: string) => {
     setLoading(true);
     setError('');
@@ -32,9 +24,7 @@ export function useGrants() {
     }
   };
 
-  /**
-   * Clear error message
-   */
+  //clear err message
   const clearError = () => setError('');
 
   return {

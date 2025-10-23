@@ -3,10 +3,9 @@
 import { Request, Response, NextFunction } from 'express';
 import { getUserIdFromToken } from '../utils/sessionManager';
 
-/**
- * Extend Express Request to include userId
- * This lets us use req.userId in routes after authentication
- */
+//Extend Express Request to include userId
+//allows use of req.userId in routes after authentication
+
 declare global {
   namespace Express {
     interface Request {
@@ -18,10 +17,10 @@ declare global {
 
 //check if user is authenticated
 export function authenticate(req: Request, res: Response, next: NextFunction) {
-  // Extract token from Authorization header
+  //extract token from Authorization header
   const token = req.headers.authorization?.replace('Bearer ', '');
 
-  // Check if token exists and is valid
+  //check if token exists and is valid
   if (!token) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
@@ -32,7 +31,7 @@ export function authenticate(req: Request, res: Response, next: NextFunction) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
-  // Attach userId and token to request for use in route handlers
+  //attach userId and token to request for use in route handlers
   req.userId = userId;
   req.token = token;
 

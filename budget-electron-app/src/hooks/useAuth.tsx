@@ -1,9 +1,4 @@
-/**
- * useAuth Hook
- * 
- * Extracted from App.tsx - handles authentication state and actions
- * Same logic, just organized into a reusable hook
- */
+//useAuth Hook - handles authentication state and actions
 
 import { useState } from 'react';
 import { login as apiLogin, logout as apiLogout } from '../services/api';
@@ -14,10 +9,7 @@ export function useAuth() {
   const [user, setUser] = useState<User | null>(null);
   const [error, setError] = useState<string>('');
 
-  /**
-   * Login user
-   * (Same logic as your handleLogin in App.tsx)
-   */
+  //login user
   const login = async (username: string, password: string): Promise<boolean> => {
     setError('');
 
@@ -33,25 +25,20 @@ export function useAuth() {
     }
   };
 
-  /**
-   * Logout user
-   * (Same logic as your handleLogout in App.tsx)
-   */
+  //logout user
   const logout = async () => {
     if (token) {
       try {
         await apiLogout(token);
       } catch (err) {
-        // Ignore logout errors
+        //ignore logout errors
       }
     }
     setToken(null);
     setUser(null);
   };
 
-  /**
-   * Clear error message
-   */
+  //clear err message
   const clearError = () => setError('');
 
   return {

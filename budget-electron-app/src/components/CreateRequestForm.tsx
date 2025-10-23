@@ -1,10 +1,5 @@
-/**
- * CreateRequestForm Component
- * 
- * Extracted from App.tsx - the create spending request form
- * Includes both manual mode and AI mode
- * Same UI and logic, just in its own component
- */
+//CreateRequestForm Component - manual mode and AI mode
+
 
 import { useState } from 'react';
 import type { Grant, AiParsedData } from '../types';
@@ -31,24 +26,24 @@ export function CreateRequestForm({
   onAiParse,
   onClearAiData,
 }: CreateRequestFormProps) {
-  // Form state
+  //form state
   const [grantId, setGrantId] = useState('');
   const [category, setCategory] = useState('');
   const [amount, setAmount] = useState('');
   const [description, setDescription] = useState('');
 
-  // AI mode state
+  //AI mode state
   const [useAiMode, setUseAiMode] = useState(false);
   const [aiMessage, setAiMessage] = useState('');
 
-  // Handle AI parse button
+  //handle AI parse button
   const handleAiParse = () => {
     if (grantId && aiMessage.trim()) {
       onAiParse(parseInt(grantId), aiMessage);
     }
   };
 
-  // Handle form submission
+  //handle form submission
   const handleSubmit = () => {
     if (!grantId || !category || !amount || !description) {
       alert('Please fill in all fields');
@@ -62,7 +57,7 @@ export function CreateRequestForm({
       description,
     });
 
-    // Reset form
+    //reset form
     setGrantId('');
     setCategory('');
     setAmount('');
@@ -71,7 +66,7 @@ export function CreateRequestForm({
     onClearAiData();
   };
 
-  // When AI parses successfully, auto-fill form
+  //when AI parses successfully, auto-fill form
   if (aiParsedData && (!category || !amount || !description)) {
     setCategory(aiParsedData.category);
     setAmount(aiParsedData.amount.toString());

@@ -1,23 +1,20 @@
 /**
  * Main App Component
- * 
- * This is your refactored App.tsx - much cleaner!
- * All logic has been moved to hooks
- * All UI has been moved to components
- * 
- * NO NEW DEPENDENCIES - Same functionality, just organized
+
+ * logic is in hooks
+ * UI in in components
  */
 
 import { useState, useEffect } from 'react';
 import './App.css';
 import './types/index.ts'
 
-// Hooks
+//hooks
 import { useAuth } from './hooks/useAuth';
 import { useGrants } from './hooks/useGrants';
 import { useSpendingRequests } from './hooks/useSpendingRequests';
 
-// Components
+//components
 import { LoginForm } from './components/LoginForm';
 import { Header } from './components/layout/Header';
 import { Navigation } from './components/layout/Navigation';
@@ -25,19 +22,19 @@ import { GrantsList } from './components/GrantsList';
 import { CreateRequestForm } from './components/CreateRequestForm';
 import { RequestsList } from './components/RequestsList';
 
-// Constants
+//constants
 import { VIEWS } from './config/constants';
 
 function App() {
-  // State management via custom hooks
+  //state management via custom hooks
   const auth = useAuth();
   const grants = useGrants();
   const spending = useSpendingRequests();
 
-  // View navigation
+  //view navigation
   const [view, setView] = useState(VIEWS.GRANTS);
 
-  // Combined error state for display
+  //combined error state for display
   const error = auth.error || grants.error || spending.error;
 
   // ============================================================================
@@ -48,7 +45,7 @@ function App() {
     const success = await auth.login(username, password);
     if (success) {
       setView(VIEWS.GRANTS);
-      // Load grants after successful login
+      //load grants after successful login
       if (auth.token) {
         grants.loadGrants(auth.token);
       }
@@ -58,7 +55,7 @@ function App() {
   const handleLogout = async () => {
     await auth.logout();
     setView(VIEWS.GRANTS);
-    // Clear data on logout
+    //clear data on logout
     spending.clearAiData();
   };
 
@@ -69,7 +66,7 @@ function App() {
   const handleNavigate = (newView: string) => {
     setView(newView);
 
-    // Load data when navigating to requests view
+    //load data when navigating to requests view
     if (newView === VIEWS.REQUESTS && auth.token) {
       spending.loadRequests(auth.token);
     }
@@ -90,7 +87,7 @@ function App() {
     const success = await spending.createRequest(auth.token, data);
     if (success) {
       alert('Spending request created successfully!');
-      // Switch to requests view and load them
+      //switch to requests view and load them
       setView(VIEWS.REQUESTS);
       spending.loadRequests(auth.token);
     }
@@ -105,7 +102,7 @@ function App() {
   // EFFECTS
   // ============================================================================
 
-  // Load grants when user logs in
+  //load grants when user logs in
   useEffect(() => {
     if (auth.token) {
       grants.loadGrants(auth.token);
@@ -116,12 +113,12 @@ function App() {
   // RENDER
   // ============================================================================
 
-  // Show login screen if not authenticated
+  //show login screen if not authenticated
   if (!auth.isAuthenticated) {
     return <LoginForm onLogin={handleLogin} error={auth.error} />;
   }
 
-  // Main app layout
+  //main app layout
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}

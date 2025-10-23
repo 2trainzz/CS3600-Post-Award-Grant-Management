@@ -1,9 +1,4 @@
-/**
- * GrantsList Component
- * 
- * Extracted from App.tsx - displays the grants view
- * Same UI and logic, just in its own component
- */
+//GrantsList Component - displays the grants view
 
 import type { Grant } from '../types';
 import { STATUS_COLORS } from '../config/constants';

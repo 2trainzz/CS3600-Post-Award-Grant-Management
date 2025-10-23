@@ -1,9 +1,4 @@
-/**
- * LoginForm Component
- * 
- * Extracted from App.tsx - the login screen
- * Same UI and logic, just in its own component
- */
+//LoginForm Component - the login screen
 
 import { useState } from 'react';
 

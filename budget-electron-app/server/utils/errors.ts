@@ -1,3 +1,4 @@
+//NOT IN USE
 /**
  * Custom Error Classes
  * 

@@ -1,6 +1,6 @@
-//sessionManager - Manages in-memory sessions
+//sessionManager - manages in-memory sessions
 
-// In-memory session storage: token -> userId
+//in-memory session storage: token -> userId
 const sessions = new Map<string, number>();
 
 //generate simple random token
@@ -9,7 +9,6 @@ function generateToken(): string {
 }
 
 //create new session for user & return generated token
-
 function createSession(userId: number): string {
   const token = generateToken();
   sessions.set(token, userId);
@@ -38,5 +37,5 @@ export {
   getUserIdFromToken,
   deleteSession,
   isValidToken,
-  sessions // Export the Map if needed for debugging
+  sessions //export the Map for potential debugging
 };

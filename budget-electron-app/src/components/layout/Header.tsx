@@ -1,9 +1,4 @@
-/**
- * Header Component
- * 
- * Extracted from App.tsx - the top header bar
- * Same UI, just in its own component
- */
+//Header Component - the top header bar
 
 import type { User } from '../../types';
 

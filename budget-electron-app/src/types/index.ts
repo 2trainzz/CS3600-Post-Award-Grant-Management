@@ -1,11 +1,8 @@
-/**
- * TypeScript Type Definitions
- * 
+/* TypeScript Type Definitions
  * All data types used throughout the application
- * Makes your code type-safe and easier to understand
  */
 
-// User data structure
+//user data structure
 export interface User {
   id: number;
   username: string;
@@ -15,7 +12,7 @@ export interface User {
   role: string;
 }
 
-// Grant data structure
+//grant data structure
 export interface Grant {
   id: number;
   grantNumber: string;
@@ -30,7 +27,7 @@ export interface Grant {
   description?: string;
 }
 
-// Spending request data structure
+//spending request data structure
 export interface SpendingRequest {
   id: number;
   amount: string | number;
@@ -52,7 +49,7 @@ export interface SpendingRequest {
   }>;
 }
 
-// AI parsed data structure
+//AI parsed data structure
 export interface AiParsedData {
   category: 'travel' | 'students';
   amount: number;
@@ -68,7 +65,7 @@ export interface AiParsedData {
   };
 }
 
-// API response structures
+//API response structures
 export interface LoginResponse {
   token: string;
   user: User;
@@ -90,7 +87,7 @@ export interface SpendingRequestCreateResponse {
   spendingRequest: SpendingRequest;
 }
 
-// API error response
+//API error response
 export interface ApiError {
   error: string;
 }

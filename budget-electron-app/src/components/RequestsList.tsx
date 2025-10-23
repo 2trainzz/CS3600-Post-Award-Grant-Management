@@ -1,9 +1,4 @@
-/**
- * RequestsList Component
- * 
- * Extracted from App.tsx - displays the spending requests view
- * Same UI and logic, just in its own component
- */
+//RequestsList Component - displays the spending requests view
 
 import type { SpendingRequest } from '../types';
 import { STATUS_COLORS } from '../config/constants';
