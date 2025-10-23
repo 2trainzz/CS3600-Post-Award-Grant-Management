@@ -1,9 +1,4 @@
-/**
- * AI Service
- * 
- * Extracted from your original server.ts
- * Handles Google Gemini AI parsing - SAME LOGIC, just organized
- */
+//ai.service - handles Google Gemini AI parsing
 
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import prisma from '../prisma';
@@ -11,13 +6,10 @@ import { logger } from '../utils/logger';
 import { checkGrantAccess } from './grants.service';
 import { getAllRules, getAllFringeRates } from './rules.service';
 
-// Initialize Gemini AI client
+//init Gemini AI client
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
 
-/**
- * Parse a natural language spending request using AI
- * (Same logic as your original /api/spending-requests/ai-parse route)
- */
+//parse a natural language spending request using AI
 export async function parseSpendingRequest(
   userMessage: string,
   grantId: number,
@@ -25,13 +17,13 @@ export async function parseSpendingRequest(
 ) {
   logger.info('AI parsing spending request', { userId, grantId });
 
-  // Check if user has access to the grant (same as before)
+  //check if user has access to the grant
   const hasAccess = await checkGrantAccess(grantId, userId);
   if (!hasAccess) {
     throw new Error('Access denied to this grant');
   }
 
-  // Fetch grant details (same as before)
+  //get grant details
   const grant = await prisma.grant.findUnique({
     where: { id: grantId },
   });
@@ -40,13 +32,13 @@ export async function parseSpendingRequest(
     throw new Error('Grant not found');
   }
 
-  // Get applicable rules (same as before)
+  //get applicable rules
   const rules = await getAllRules();
 
-  // Get applicable fringe rates (same as before)
+  //get applicable fringe rates
   const fringeRates = await getAllFringeRates();
 
-  // Build context prompt for Gemini (same as before)
+  //build context prompt for Gemini
   const context = `
 You are a grant management assistant. Parse the user's spending request and extract structured information.
 
@@ -83,17 +75,17 @@ If the request is unclear or missing information, include it in warnings.
 `;
 
   try {
-    // Call Gemini (same as before)
+    //call gemini
     const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash-exp' });
     const result = await model.generateContent(context);
     const responseText = result.response.text();
 
     logger.debug('AI response received', { responseLength: responseText.length });
 
-    // Parse JSON response (same as before)
+    //parse JSON response
     let parsedData;
     try {
-      // Remove markdown code blocks if present
+      //remove markdown code blocks if present
       const cleanedText = responseText.replace(/```json\n?|\n?```/g, '').trim();
       parsedData = JSON.parse(cleanedText);
     } catch (parseError) {
@@ -101,7 +93,7 @@ If the request is unclear or missing information, include it in warnings.
       throw new Error('Failed to parse AI response');
     }
 
-    // Add grant context for frontend (same as before)
+    //add grant context for frontend
     parsedData.grant = {
       id: grant.id,
       name: grant.grantName,

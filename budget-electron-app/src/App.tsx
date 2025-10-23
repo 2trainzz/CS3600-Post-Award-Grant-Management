@@ -12,23 +12,23 @@ function App() {
   const [spendingRequests, setSpendingRequests] = useState([]);
   const [error, setError] = useState('');
   
-  // Login form state
+  //login form state
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   
-  // Request form state
+  //request form state
   const [reqGrantId, setReqGrantId] = useState('');
   const [reqCategory, setReqCategory] = useState('');
   const [reqAmount, setReqAmount] = useState('');
   const [reqDescription, setReqDescription] = useState('');
   
-  // AI chat state
+  //AI chat state
   const [aiMessage, setAiMessage] = useState('');
   const [aiParsedData, setAiParsedData] = useState(null);
   const [aiLoading, setAiLoading] = useState(false);
   const [useAiMode, setUseAiMode] = useState(false);
 
-  // Login
+  //login
   const handleLogin = async () => {
     setError('');
     
@@ -57,7 +57,7 @@ function App() {
     }
   };
 
-  // Logout
+  //logout
   const handleLogout = async () => {
     if (token) {
       await fetch(`${API_BASE}/auth/logout`, {
@@ -71,7 +71,7 @@ function App() {
     setGrants([]);
   };
 
-  // Fetch grants
+  //get grants
   const fetchGrants = async (authToken) => {
     try {
       const res = await fetch(`${API_BASE}/grants`, {
@@ -84,7 +84,7 @@ function App() {
     }
   };
 
-  // Fetch spending requests
+  //get spending requests
   const fetchSpendingRequests = async () => {
     try {
       const res = await fetch(`${API_BASE}/ai/parse-spending-request`, {
@@ -97,7 +97,7 @@ function App() {
     }
   };
 
-  // AI Parse Request
+  //AI Parse Request
   const handleAiParse = async () => {
     if (!aiMessage.trim() || !reqGrantId) {
       setError('Please select a grant and enter a request');
@@ -129,7 +129,7 @@ function App() {
       }
       
       setAiParsedData(data.parsed);
-      // Auto-fill the form with parsed data
+      //auto-fill the form with parsed data
       setReqCategory(data.parsed.category);
       setReqAmount(data.parsed.amount.toString());
       setReqDescription(data.parsed.description);
@@ -141,7 +141,7 @@ function App() {
     }
   };
 
-  // Create spending request
+  //create spending request
   const handleCreateRequest = async () => {
     setError('');
     
@@ -186,14 +186,14 @@ function App() {
     }
   };
 
-  // Load spending requests when switching to requests view
+  //load spending requests when switching to requests view
   useEffect(() => {
     if (view === 'requests' && token) {
       fetchSpendingRequests();
     }
   }, [view, token]);
 
-  // Login View
+  //login View
   if (!token) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
@@ -255,7 +255,7 @@ function App() {
     );
   }
 
-  // Main App View
+  //main App View
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="bg-indigo-600 text-white shadow-lg">

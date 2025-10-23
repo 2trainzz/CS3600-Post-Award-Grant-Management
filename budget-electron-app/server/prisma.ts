@@ -1,16 +1,5 @@
-/*
-import { PrismaClient } from '@prisma/client';
 
-const prisma = new PrismaClient();
-
-export default prisma;
-*/
-
-/**
- * Prisma Database Client
- * 
- * Simple singleton - just adds logging to your existing setup
- */
+//Prisma Database Client (singleton)
 
 import { PrismaClient } from '@prisma/client';
 

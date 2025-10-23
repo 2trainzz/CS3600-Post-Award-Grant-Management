@@ -62,8 +62,27 @@ declare global {
   }
 }
 
-/**
- * This export is required to make this a module
- * Without it, the global augmentation won't work
- */
+//window.electron
+declare global {
+  interface Window {
+    electron: {
+      platform: string;
+      versions: {
+        node: string;
+        chrome: string;
+        electron: string;
+      };
+      windowControls: {
+        minimize: () => void;
+        maximize: () => void;
+        close: () => void;
+      };
+      sendMessage: (channel: string, data: any) => void;
+      onMessage: (channel: string, callback: (data: any) => void) => void;
+      removeListener: (channel: string) => void;
+    };
+  }
+}
+
+//export for global augmentation
 export {};

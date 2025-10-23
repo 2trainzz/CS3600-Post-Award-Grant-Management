@@ -1,18 +1,10 @@
-/**
- * Spending Requests Service
- * 
- * Extracted from your original server.ts
- * Handles spending request operations - SAME LOGIC, just organized
- */
+//spending.service - handles spending request operations
 
 import prisma from '../prisma';
 import { logger } from '../utils/logger';
 import { checkGrantAccess } from './grants.service';
 
-/**
- * Create a new spending request
- * (Same logic as your original /api/spending-requests POST route)
- */
+//create new spending request
 export async function createSpendingRequest(data: {
   grantId: number;
   amount: number;
@@ -23,13 +15,13 @@ export async function createSpendingRequest(data: {
 }, userId: number) {
   logger.info('Creating spending request', { userId, grantId: data.grantId });
 
-  // Check if user has access to this grant (same as before)
+  //check if user has access to this grant
   const hasAccess = await checkGrantAccess(data.grantId, userId);
   if (!hasAccess) {
     throw new Error('Access denied to this grant');
   }
 
-  // Create spending request and link user/grant in a transaction (same as before)
+  //create spending request and link user/grant in a transaction
   const result = await prisma.$transaction(async (tx) => {
     // Create the spending request
     const spendingRequest = await tx.spendingRequest.create({
@@ -40,7 +32,7 @@ export async function createSpendingRequest(data: {
       },
     });
 
-    // Link user, grant, and spending request
+    //link user, grant, and spending request
     await tx.userGrantRequest.create({
       data: {
         userId,
@@ -50,7 +42,7 @@ export async function createSpendingRequest(data: {
       },
     });
 
-    // Link rules and fringe rates if provided (same as before)
+    //link rules and fringe rates if provided
     if (data.ruleIds && data.fringeRateIds && data.ruleIds.length > 0 && data.fringeRateIds.length > 0) {
       for (const ruleId of data.ruleIds) {
         for (const fringeRateId of data.fringeRateIds) {
@@ -72,14 +64,11 @@ export async function createSpendingRequest(data: {
   return result;
 }
 
-/**
- * Get all spending requests for a user
- * (Same logic as your original /api/spending-requests GET route)
- */
+//get all spending requests for a user
 export async function getUserSpendingRequests(userId: number) {
   logger.debug('Fetching spending requests for user', { userId });
 
-  // Find all spending requests where user is involved (same as before)
+  //find all spending requests where user is involved
   const userGrantRequests = await prisma.userGrantRequest.findMany({
     where: { userId },
     include: {
@@ -106,7 +95,7 @@ export async function getUserSpendingRequests(userId: number) {
     orderBy: { createdAt: 'desc' },
   });
 
-  // Transform data for easier frontend consumption (same as before)
+  //transform data for frontend
   const requests = userGrantRequests.map((ugr) => ({
     ...ugr.spendingRequest,
     grant: ugr.grant,
@@ -117,20 +106,17 @@ export async function getUserSpendingRequests(userId: number) {
   return requests;
 }
 
-/**
- * Get spending requests for a specific grant
- * (Same logic as your original /api/grants/:id/spending-requests route)
- */
+//get spending requests for a specific grant
 export async function getGrantSpendingRequests(grantId: number, userId: number) {
   logger.debug('Fetching spending requests for grant', { grantId, userId });
 
-  // Check if user has access to this grant (same as before)
+  //check if user has access to this grant
   const hasAccess = await checkGrantAccess(grantId, userId);
   if (!hasAccess) {
     throw new Error('Access denied');
   }
 
-  // Find all spending requests for this grant (same as before)
+  //find all spending requests for this grant
   const userGrantRequests = await prisma.userGrantRequest.findMany({
     where: { grantId },
     include: {
@@ -156,7 +142,7 @@ export async function getGrantSpendingRequests(grantId: number, userId: number) 
     orderBy: { createdAt: 'desc' },
   });
 
-  // Group by spending request to show all users involved (same as before)
+  //group by spending request to show all users involved
   const requestMap = new Map();
 
   for (const ugr of userGrantRequests) {
@@ -176,14 +162,11 @@ export async function getGrantSpendingRequests(grantId: number, userId: number) 
   return Array.from(requestMap.values());
 }
 
-/**
- * Get specific spending request details
- * (Same logic as your original /api/spending-requests/:id route)
- */
+//get specific spending request details
 export async function getSpendingRequestDetails(requestId: number, userId: number) {
   logger.debug('Fetching spending request details', { requestId, userId });
 
-  // Check if user has access to this request (same as before)
+  //check if user has access to this request
   const userGrantRequest = await prisma.userGrantRequest.findFirst({
     where: {
       userId,
@@ -195,7 +178,7 @@ export async function getSpendingRequestDetails(requestId: number, userId: numbe
     throw new Error('Access denied to this request');
   }
 
-  // Get full spending request details (same as before)
+  //get full spending request details
   const spendingRequest = await prisma.spendingRequest.findUnique({
     where: { id: requestId },
     include: {
@@ -224,10 +207,7 @@ export async function getSpendingRequestDetails(requestId: number, userId: numbe
   return spendingRequest;
 }
 
-/**
- * Add user to an existing spending request
- * (Same logic as your original /api/spending-requests/:id/users route)
- */
+//add user to an existing spending request
 export async function addUserToSpendingRequest(
   requestId: number,
   targetUserId: number,
@@ -235,7 +215,7 @@ export async function addUserToSpendingRequest(
   role: string,
   currentUserId: number
 ) {
-  // Check if current user has access to this request (same as before)
+  //check if current user has access to this request
   const existingAccess = await prisma.userGrantRequest.findFirst({
     where: {
       userId: currentUserId,
@@ -247,7 +227,7 @@ export async function addUserToSpendingRequest(
     throw new Error('Access denied');
   }
 
-  // Add new user to the spending request (same as before)
+  //add new user to the spending request
   const userGrantRequest = await prisma.userGrantRequest.create({
     data: {
       userId: targetUserId,
@@ -261,10 +241,7 @@ export async function addUserToSpendingRequest(
   return userGrantRequest;
 }
 
-/**
- * Link rules and fringe rates to a spending request
- * (Same logic as your original /api/spending-requests/:id/rules-fringes route)
- */
+//link rules and fringe rates to a spending request
 export async function addRuleFringeToRequest(
   requestId: number,
   ruleId: number,
@@ -273,7 +250,7 @@ export async function addRuleFringeToRequest(
   notes: string | undefined,
   userId: number
 ) {
-  // Check if user has access to this request (same as before)
+  //check if user has access to this request
   const userGrantRequest = await prisma.userGrantRequest.findFirst({
     where: {
       userId,

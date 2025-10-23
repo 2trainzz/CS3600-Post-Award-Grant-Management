@@ -1,3 +1,4 @@
+//necessary?!
 /**
  * Type extensions for Express Request object
  * 
@@ -23,8 +24,5 @@ declare global {
   }
 }
 
-/**
- * Export an empty object to make this a module
- * Required for the global namespace augmentation to work
- */
+//export for global namespace augmentation
 export {};

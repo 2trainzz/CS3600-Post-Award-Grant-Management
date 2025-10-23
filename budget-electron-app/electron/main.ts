@@ -30,9 +30,7 @@ let serverProcess: ChildProcess | null = null;
 // WINDOW MANAGEMENT
 // ============================================================================
 
-/**
- * Creates the main application window
- */
+//main app window
 function createWindow(): void {
   mainWindow = new BrowserWindow({
     width: 1200,
@@ -51,12 +49,7 @@ function createWindow(): void {
       
       // Enable dev tools in development
       devTools: isDev,
-    },
-    // Optional: Start without window frame for custom controls
-    // frame: false,
-    
-    // Optional: Hide until ready to prevent flash
-    show: false,
+    }
   });
 
   // Load the appropriate content based on environment
@@ -130,9 +123,7 @@ function startServer(): void {
   console.log(`Server started on port ${serverPort}`);
 }
 
-/**
- * Stops the Express server process
- */
+//stop express server
 function stopServer(): void {
   if (serverProcess && !isDev) {
     console.log('Stopping server process...');
@@ -181,9 +172,7 @@ function setupIpcHandlers(): void {
 // APP LIFECYCLE
 // ============================================================================
 
-/**
- * Initialize the application when ready
- */
+//when ready, init app
 app.whenReady().then(() => {
   console.log('Electron app is ready');
   
@@ -220,27 +209,20 @@ app.on('window-all-closed', () => {
   }
 });
 
-/**
- * Clean up before quitting
- */
+//clean before quit
 app.on('before-quit', () => {
   console.log('App is quitting...');
   stopServer();
 });
 
-/**
- * Handle unhandled promise rejections
- */
+//for unhandled promise rejections
 process.on('unhandledRejection', (error) => {
   console.error('Unhandled Promise Rejection:', error);
 });
 
-/**
- * Handle uncaught exceptions
- */
+//for uncaught exceptions
 process.on('uncaughtException', (error) => {
   console.error('Uncaught Exception:', error);
-  // In production, you might want to log to a file or service
 });
 
 // ============================================================================

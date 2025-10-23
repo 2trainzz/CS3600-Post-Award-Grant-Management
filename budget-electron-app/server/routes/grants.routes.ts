@@ -1,9 +1,4 @@
-/**
- * Grants Routes
- * 
- * from original server.ts
- * Handles /api/grants/* endpoints - SAME LOGIC, just organized
- */
+//grants.routes
 
 import { Router } from 'express';
 import { getUserGrants, getGrantDetails } from '../services/grants.service';
@@ -12,11 +7,7 @@ import { authenticate } from '../middleware/auth.middleware';
 
 const router = Router();
 
-/**
- * GET /api/grants
- * Get all grants for the authenticated user
- * (Same as your original code)
- */
+//GET /api/grants -get all grants for the authenticated user
 router.get('/', authenticate, async (req, res) => {
   try {
     const grants = await getUserGrants(req.userId!);
@@ -26,11 +17,7 @@ router.get('/', authenticate, async (req, res) => {
   }
 });
 
-/**
- * GET /api/grants/:id
- * Get detailed information about a specific grant
- * (Same as your original code)
- */
+//GET /api/grants/:id -get detailed information about a specific grant
 router.get('/:id', authenticate, async (req, res) => {
   try {
     const grantId = parseInt(req.params.id);
@@ -47,11 +34,7 @@ router.get('/:id', authenticate, async (req, res) => {
   }
 });
 
-/**
- * GET /api/grants/:id/spending-requests
- * Get all spending requests for a specific grant
- * (Same as your original code)
- */
+//GET /api/grants/:id/spending-requests -get all spending requests for a specific grant
 router.get('/:id/spending-requests', authenticate, async (req, res) => {
   try {
     const grantId = parseInt(req.params.id);

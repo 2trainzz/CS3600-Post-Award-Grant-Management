@@ -1,9 +1,4 @@
-/**
- * Spending Requests Routes
- * 
- * Extracted from your original server.ts
- * Handles /api/spending-requests/* endpoints - SAME LOGIC, just organized
- */
+//spending.routes
 
 import { Router } from 'express';
 import {
@@ -18,11 +13,7 @@ import { authenticate } from '../middleware/auth.middleware';
 
 const router = Router();
 
-/**
- * POST /api/spending-requests
- * Create a new spending request
- * (Same as your original code)
- */
+//POST /api/spending-requests -create a new spending request
 router.post('/', authenticate, async (req, res) => {
   try {
     const { grantId, amount, category, description, ruleIds, fringeRateIds } = req.body;
@@ -40,11 +31,7 @@ router.post('/', authenticate, async (req, res) => {
   }
 });
 
-/**
- * GET /api/spending-requests
- * Get all spending requests for the authenticated user
- * (Same as your original code)
- */
+//GET /api/spending-requests -get all spending requests for the authenticated user
 router.get('/', authenticate, async (req, res) => {
   try {
     const requests = await getUserSpendingRequests(req.userId!);
@@ -54,11 +41,7 @@ router.get('/', authenticate, async (req, res) => {
   }
 });
 
-/**
- * GET /api/spending-requests/:id
- * Get detailed information about a specific spending request
- * (Same as your original code)
- */
+//GET /api/spending-requests/:id -get detailed information about a specific spending request
 router.get('/:id', authenticate, async (req, res) => {
   try {
     const requestId = parseInt(req.params.id);
@@ -73,11 +56,7 @@ router.get('/:id', authenticate, async (req, res) => {
   }
 });
 
-/**
- * POST /api/spending-requests/:id/users
- * Add a user to an existing spending request
- * (Same as your original code)
- */
+//POST /api/spending-requests/:id/users -add a user to an existing spending request
 router.post('/:id/users', authenticate, async (req, res) => {
   try {
     const requestId = parseInt(req.params.id);
@@ -99,11 +78,7 @@ router.post('/:id/users', authenticate, async (req, res) => {
   }
 });
 
-/**
- * POST /api/spending-requests/:id/rules-fringes
- * Link rules and fringe rates to a spending request
- * (Same as your original code)
- */
+//POST /api/spending-requests/:id/rules-fringes -link rules and fringe rates to a spending request
 router.post('/:id/rules-fringes', authenticate, async (req, res) => {
   try {
     const requestId = parseInt(req.params.id);

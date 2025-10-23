@@ -78,37 +78,3 @@ contextBridge.exposeInMainWorld('electron', {
   },
 });
 
-/**
- * Type definitions for window.electron
- * Add this to a separate electron.d.ts file or at the end of this file
- */
-declare global {
-  interface Window {
-    electron: {
-      platform: string;
-      versions: {
-        node: string;
-        chrome: string;
-        electron: string;
-      };
-      windowControls: {
-        minimize: () => void;
-        maximize: () => void;
-        close: () => void;
-      };
-      sendMessage: (channel: string, data: any) => void;
-      onMessage: (channel: string, callback: (data: any) => void) => void;
-      removeListener: (channel: string) => void;
-    };
-  }
-}
-
-/**
- * NOTE: For your current app, you may not need IPC communication yet
- * since your React app communicates directly with the Express server via HTTP.
- * 
- * This preload is here for:
- * 1. Security (required by contextIsolation: true)
- * 2. Future features that might need main process access
- * 3. Platform detection and window controls
- */

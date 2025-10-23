@@ -1,19 +1,11 @@
-/**
- * Authentication Service
- * 
- * Extracted from your original server.ts
- * Handles user registration and login - SAME LOGIC, just organized
- */
+//auth.service -handles user registration and login
 
 import bcrypt from 'bcrypt';
 import prisma from '../prisma';
 import { createSession, deleteSession } from '../utils/sessionManager';
 import { logger } from '../utils/logger';
 
-/**
- * Register a new user
- * (Exact same logic as your original code)
- */
+//register new user
 export async function register(data: {
   username: string;
   password: string;
@@ -23,10 +15,9 @@ export async function register(data: {
 }) {
   logger.info('User registration attempt', { username: data.username });
 
-  // Hash password (same as before)
   const hashedPassword = await bcrypt.hash(data.password, 10);
 
-  // Create user (same as before)
+  //create user
   const user = await prisma.user.create({
     data: {
       username: data.username,
@@ -50,27 +41,24 @@ export async function register(data: {
   return { user };
 }
 
-/**
- * Login user and create session
- * (Exact same logic as your original code)
- */
+//login user and create session
 export async function login(data: {
   username: string;
   password: string;
 }) {
   logger.info('Login attempt', { username: data.username });
 
-  // Find user (same as before)
+  //find user
   const user = await prisma.user.findUnique({
     where: { username: data.username },
   });
 
-  // Check if user exists and password matches (same as before)
+  //check user exists and password matches
   if (!user || !(await bcrypt.compare(data.password, user.password))) {
     throw new Error('Invalid credentials');
   }
 
-  // Create session and generate token (same as before)
+  //create session and generate token
   const token = createSession(user.id);
 
   logger.info('User logged in successfully', { userId: user.id });
@@ -88,9 +76,7 @@ export async function login(data: {
   };
 }
 
-/**
- * Logout user (delete session)
- */
+//logout (delete session)
 export async function logout(token: string) {
   const { deleteSession } = await import('../utils/sessionManager');
   deleteSession(token);

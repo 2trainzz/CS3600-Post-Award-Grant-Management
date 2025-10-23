@@ -1,9 +1,4 @@
-/**
- * API Service
- * 
- * All API calls in one place - extracted from App.tsx
- * Same fetch logic, just organized
- */
+//apiService - all API calls
 
 import { API_BASE } from '../config/constants';
 import type {
@@ -14,9 +9,7 @@ import type {
   AiParseResponse,
 } from '../types';
 
-/**
- * Helper to get auth headers
- */
+///helper fn - get auth headers
 function getAuthHeaders(token: string) {
   return {
     'Content-Type': 'application/json',
@@ -28,9 +21,7 @@ function getAuthHeaders(token: string) {
 // AUTHENTICATION
 // ============================================================================
 
-/**
- * Login user
- */
+//login user
 export async function login(username: string, password: string): Promise<LoginResponse> {
   const res = await fetch(`${API_BASE}/auth/login`, {
     method: 'POST',
@@ -47,9 +38,7 @@ export async function login(username: string, password: string): Promise<LoginRe
   return data;
 }
 
-/**
- * Logout user
- */
+//logout user
 export async function logout(token: string): Promise<void> {
   await fetch(`${API_BASE}/auth/logout`, {
     method: 'POST',
@@ -61,9 +50,7 @@ export async function logout(token: string): Promise<void> {
 // GRANTS
 // ============================================================================
 
-/**
- * Fetch user's grants
- */
+//get user grants
 export async function fetchGrants(token: string): Promise<GrantsResponse> {
   const res = await fetch(`${API_BASE}/grants`, {
     headers: getAuthHeaders(token),
@@ -82,9 +69,7 @@ export async function fetchGrants(token: string): Promise<GrantsResponse> {
 // SPENDING REQUESTS
 // ============================================================================
 
-/**
- * Fetch user's spending requests
- */
+//get user spend requests
 export async function fetchSpendingRequests(token: string): Promise<SpendingRequestsResponse> {
   const res = await fetch(`${API_BASE}/spending-requests`, {
     headers: getAuthHeaders(token),
@@ -99,9 +84,7 @@ export async function fetchSpendingRequests(token: string): Promise<SpendingRequ
   return data;
 }
 
-/**
- * Create a new spending request
- */
+//create new spending request
 export async function createSpendingRequest(
   token: string,
   requestData: {
@@ -130,12 +113,7 @@ export async function createSpendingRequest(
 // AI PARSING
 // ============================================================================
 
-/**
- * Parse spending request with AI
- * 
- * NOTE: Endpoint changed from /spending-requests/ai-parse
- * to /ai/parse-spending-request
- */
+//parse spending request with AI
 export async function parseSpendingRequestWithAI(
   token: string,
   grantId: number,

@@ -1,16 +1,10 @@
-/**
- * Rules and Fringe Rates Service
- * 
- * Simple service to fetch rules and fringe rates
- * (These are used by the AI parsing and spending requests)
- */
+//rules.service -simple service to fetch rules and fringe rates
+//used by the AI parsing and spending requests
 
 import prisma from '../prisma';
 import { logger } from '../utils/logger';
 
-/**
- * Get all rules
- */
+//get all rules
 export async function getAllRules() {
   logger.debug('Fetching all rules');
 
@@ -21,9 +15,7 @@ export async function getAllRules() {
   });
 }
 
-/**
- * Get all fringe rates
- */
+//get all fringe rates
 export async function getAllFringeRates() {
   logger.debug('Fetching all fringe rates');
 

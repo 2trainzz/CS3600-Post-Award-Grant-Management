@@ -1,19 +1,16 @@
 /**
  * Express Server - Main Entry Point
  * 
- * This is your refactored server file - much cleaner!
- * All route handlers have been moved to routes/
- * All business logic has been moved to services/
- * All utilities have been organized in utils/
- * 
- * NO NEW DEPENDENCIES - Same functionality, just organized
+ * route handlers in routes/
+ * business logic in services/
+ * utilities organized in utils/
  */
 
 import express from 'express';
 import cors from 'cors';
 import { logger } from './utils/logger';
 
-// Import route modules
+//route modules
 import authRoutes from './routes/auth.routes';
 import grantsRoutes from './routes/grants.routes';
 import spendingRoutes from './routes/spending.routes';

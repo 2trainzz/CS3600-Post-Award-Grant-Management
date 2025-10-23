@@ -1,10 +1,4 @@
-/**
- * AI Routes
- * 
- * Endpoints:
- * - POST /api/ai/parse-spending-request - Parse natural language request
- * - POST /api/ai/suggest-description - Get description suggestions
- */
+// ai.routes
 
 import { Router } from 'express';
 import { parseSpendingRequest } from '../services/ai.service';
@@ -12,14 +6,7 @@ import { authenticate } from '../middleware/auth.middleware';
 
 const router = Router();
 
-/**
- * POST /api/ai/parse-spending-request
- * Parse a natural language spending request using AI
- * (Same as your original /api/spending-requests/ai-parse route)
- * 
- * Note: The endpoint path changed from /api/spending-requests/ai-parse
- * to /api/ai/parse-spending-request for better organization
- */
+//POST /api/ai/parse-spending-request -parse a natural language spending request using AI
 router.post('/parse-spending-request', authenticate, async (req, res) => {
   try {
     const { userMessage, grantId } = req.body;

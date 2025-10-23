@@ -1,17 +1,9 @@
-/**
- * Grants Service
- * 
- * Extracted from your original server.ts
- * Handles grant operations - SAME LOGIC, just organized
- */
+//grants.service - handles grant operations
 
 import prisma from '../prisma';
 import { logger } from '../utils/logger';
 
-/**
- * Get all grants for a user
- * (Same logic as your original /api/grants route)
- */
+//get all grants for a user
 export async function getUserGrants(userId: number) {
   logger.debug('Fetching grants for user', { userId });
 
@@ -22,18 +14,15 @@ export async function getUserGrants(userId: number) {
     },
   });
 
-  // Return just the grants (same as before)
+  //return just the grants
   return userGrants.map((ug) => ug.grant);
 }
 
-/**
- * Get detailed information about a specific grant
- * (Same logic as your original /api/grants/:id route)
- */
+//get detailed information about a specific grant
 export async function getGrantDetails(grantId: number, userId: number) {
   logger.debug('Fetching grant details', { grantId, userId });
 
-  // Check if user has access to this grant (same as before)
+  //check if user has access to grant
   const userGrant = await prisma.userGrant.findFirst({
     where: {
       userId,
@@ -45,7 +34,7 @@ export async function getGrantDetails(grantId: number, userId: number) {
     throw new Error('Access denied');
   }
 
-  // Fetch grant (same as before)
+  //get grant
   const grant = await prisma.grant.findUnique({
     where: { id: grantId },
   });
@@ -57,10 +46,7 @@ export async function getGrantDetails(grantId: number, userId: number) {
   return grant;
 }
 
-/**
- * Check if user has access to a grant
- * Helper function used by other services
- */
+//check if user has access to a grant -helper function used by other services
 export async function checkGrantAccess(grantId: number, userId: number): Promise<boolean> {
   const userGrant = await prisma.userGrant.findFirst({
     where: {

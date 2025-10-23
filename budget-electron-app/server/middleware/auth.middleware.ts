@@ -1,9 +1,4 @@
-/**
- * Authentication Middleware
- * 
- * Extracted from your original server.ts
- * Checks session token - SAME LOGIC, just organized
- */
+// auth.middleware - checks session token
 
 import { Request, Response, NextFunction } from 'express';
 import { getUserIdFromToken } from '../utils/sessionManager';
@@ -21,10 +16,7 @@ declare global {
   }
 }
 
-/**
- * Middleware to check if user is authenticated
- * (Exact same logic as your original authenticate function)
- */
+//check if user is authenticated
 export function authenticate(req: Request, res: Response, next: NextFunction) {
   // Extract token from Authorization header
   const token = req.headers.authorization?.replace('Bearer ', '');

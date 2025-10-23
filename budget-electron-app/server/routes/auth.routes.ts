@@ -1,9 +1,4 @@
-/**
- * Authentication Routes
- * 
- * from original server.ts
- * Handles /api/auth/* endpoints - SAME LOGIC, just organized
- */
+// auth.routes
 
 import { Router } from 'express';
 import { register, login, logout } from '../services/auth.service';
@@ -11,11 +6,7 @@ import { authenticate } from '../middleware/auth.middleware';
 
 const router = Router();
 
-/**
- * POST /api/auth/register
- * Register a new user
- * (Same as your original code)
- */
+//POST /api/auth/register - register a new user
 router.post('/register', async (req, res) => {
   try {
     const { username, password, email, firstName, lastName } = req.body;
@@ -26,11 +17,7 @@ router.post('/register', async (req, res) => {
   }
 });
 
-/**
- * POST /api/auth/login
- * Login and get session token
- * (Same as your original code)
- */
+//POST /api/auth/login - login and get session token
 router.post('/login', async (req, res) => {
   try {
     const { username, password } = req.body;
@@ -41,11 +28,7 @@ router.post('/login', async (req, res) => {
   }
 });
 
-/**
- * POST /api/auth/logout
- * Logout (delete session)
- * (Same as your original code)
- */
+//POST /api/auth/logout -logout (delete session)
 router.post('/logout', authenticate, async (req, res) => {
   try {
     if (req.token) {
