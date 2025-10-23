@@ -99,6 +99,45 @@ function App() {
   };
 
   // ============================================================================
+  // APPROVAL HANDLERS
+  // ============================================================================
+
+  const handleApprove = async (requestId: number, reviewNotes: string) => {
+    if (!auth.token) return;
+
+    const success = await spending.updateStatus(
+      auth.token,
+      requestId,
+      'approved',
+      reviewNotes
+    );
+
+    if (success) {
+      alert('Request approved successfully!');
+      // Reload requests and grants to show updated data
+      spending.loadRequests(auth.token);
+      grants.loadGrants(auth.token);
+    }
+  };
+
+  const handleReject = async (requestId: number, reviewNotes: string) => {
+    if (!auth.token) return;
+
+    const success = await spending.updateStatus(
+      auth.token,
+      requestId,
+      'rejected',
+      reviewNotes
+    );
+
+    if (success) {
+      alert('Request rejected.');
+      // Reload requests
+      spending.loadRequests(auth.token);
+    }
+  };
+
+  // ============================================================================
   // EFFECTS
   // ============================================================================
 
@@ -153,7 +192,12 @@ function App() {
         )}
 
         {view === VIEWS.REQUESTS && (
-          <RequestsList requests={spending.requests} />
+          <RequestsList 
+            requests={spending.requests}
+            onApprove={handleApprove}
+            onReject={handleReject}
+            userRole={auth.user?.role}
+          />
         )}
       </main>
     </div>

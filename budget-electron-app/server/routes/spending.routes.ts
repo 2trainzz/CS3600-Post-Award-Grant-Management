@@ -8,6 +8,7 @@ import {
   getSpendingRequestDetails,
   addUserToSpendingRequest,
   addRuleFringeToRequest,
+  updateRequestStatus
 } from '../services/spending.service';
 import { authenticate } from '../middleware/auth.middleware';
 
@@ -95,6 +96,39 @@ router.post('/:id/rules-fringes', authenticate, async (req, res) => {
   } catch (error: any) {
     if (error.message === 'Access denied') {
       res.status(403).json({ error: error.message });
+    } else {
+      res.status(400).json({ error: error.message });
+    }
+  }
+});
+
+//PUT /api/spending-requests/:id/status -approve or reject a spending request
+router.put('/:id/status', authenticate, async (req, res) => {
+  try {
+    const requestId = parseInt(req.params.id);
+    const { status, reviewNotes } = req.body;
+
+    // Validate status
+    if (!['approved', 'rejected'].includes(status)) {
+      return res.status(400).json({ 
+        error: 'Status must be either "approved" or "rejected"' 
+      });
+    }
+
+    const { updateRequestStatus } = await import('../services/spending.service');
+    const updatedRequest = await updateRequestStatus(
+      requestId,
+      status,
+      reviewNotes,
+      req.userId!
+    );
+
+    res.json({ spendingRequest: updatedRequest });
+  } catch (error: any) {
+    if (error.message.includes('Access denied')) {
+      res.status(403).json({ error: error.message });
+    } else if (error.message === 'Spending request not found') {
+      res.status(404).json({ error: error.message });
     } else {
       res.status(400).json({ error: error.message });
     }

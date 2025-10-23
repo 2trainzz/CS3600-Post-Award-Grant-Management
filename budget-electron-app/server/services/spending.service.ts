@@ -276,3 +276,114 @@ export async function addRuleFringeToRequest(
   logger.info('Rule and fringe rate added to request', { requestId, ruleId, fringeRateId });
   return requestRuleFringe;
 }
+
+/**
+ * Update spending request status (approve/reject)
+ * Only admin users with access to the grant can approve
+ */
+export async function updateRequestStatus(
+  requestId: number,
+  status: 'approved' | 'rejected',
+  reviewNotes: string | undefined,
+  reviewerId: number
+) {
+  logger.info('Updating request status', { requestId, status, reviewerId });
+
+  //get the request to find the grant
+  const userGrantRequest = await prisma.userGrantRequest.findFirst({
+    where: { spendingRequestId: requestId },
+    include: {
+      spendingRequest: true,
+      grant: true,
+    },
+  });
+
+  if (!userGrantRequest) {
+    throw new Error('Spending request not found');
+  }
+
+  //check if reviewer has access to this grant
+  const reviewerAccess = await checkGrantAccess(
+    userGrantRequest.grantId,
+    reviewerId
+  );
+
+  //check if reviewer has admin role to review grant
+  //check if user has access to this request
+  const adminPower = await prisma.user.findUnique({
+    where: {
+        id: reviewerId,
+        role: 'admin',
+    },
+    select: {
+        role: true,
+    },
+  });
+
+  if (!reviewerAccess || !adminPower) {
+    throw new Error('Access denied - you do not have permission to approve this grant');
+  }
+
+  // Update the spending request
+  const updatedRequest = await prisma.$transaction(async (tx) => {
+    // Update request status
+    const updated = await tx.spendingRequest.update({
+      where: { id: requestId },
+      data: {
+        status,
+        reviewDate: new Date(),
+        reviewedBy: reviewerId,
+        reviewNotes,
+      },
+    });
+
+    // If approved, deduct from grant balances
+    if (status === 'approved') {
+      const amount = Number(userGrantRequest.spendingRequest.amount);
+      const category = userGrantRequest.spendingRequest.category;
+
+      await tx.grant.update({
+        where: { id: userGrantRequest.grantId },
+        data: {
+          remainingAmount: {
+            decrement: amount,
+          },
+          ...(category === 'students' && {
+            studentBalance: {
+              decrement: amount,
+            },
+          }),
+          ...(category === 'travel' && {
+            travelBalance: {
+              decrement: amount,
+            },
+          }),
+        },
+      });
+    }
+
+    // Add reviewer to the request if not already there
+    const existingReviewer = await tx.userGrantRequest.findFirst({
+      where: {
+        userId: reviewerId,
+        spendingRequestId: requestId,
+      },
+    });
+
+    if (!existingReviewer) {
+      await tx.userGrantRequest.create({
+        data: {
+          userId: reviewerId,
+          grantId: userGrantRequest.grantId,
+          spendingRequestId: requestId,
+          role: 'approver',
+        },
+      });
+    }
+
+    return updated;
+  });
+
+  logger.info('Request status updated', { requestId, status });
+  return updatedRequest;
+}

@@ -4,7 +4,8 @@ import { useState } from 'react';
 import { 
   fetchSpendingRequests, 
   createSpendingRequest,
-  parseSpendingRequestWithAI 
+  parseSpendingRequestWithAI,
+  updateRequestStatus 
 } from '../services/api';
 import type { SpendingRequest, AiParsedData } from '../types';
 
@@ -79,6 +80,24 @@ export function useSpendingRequests() {
     }
   };
 
+  //Approve or reject a spending request
+  const updateStatus = async (
+    token: string,
+    requestId: number,
+    status: 'approved' | 'rejected',
+    reviewNotes?: string
+  ): Promise<boolean> => {
+    setError('');
+
+    try {
+      await updateRequestStatus(token, requestId, status, reviewNotes);
+      return true;
+    } catch (err: any) {
+      setError(err.message || 'Failed to update request status');
+      return false;
+    }
+  };
+
   //clear AI parsed data
   const clearAiData = () => {
     setAiParsedData(null);
@@ -96,6 +115,7 @@ export function useSpendingRequests() {
     loadRequests,
     createRequest,
     parseWithAI,
+    updateStatus,
     clearAiData,
     clearError,
   };

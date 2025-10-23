@@ -1,13 +1,20 @@
 //RequestsList Component - displays the spending requests view
 
+import { useState } from 'react';
 import type { SpendingRequest } from '../types';
 import { STATUS_COLORS } from '../config/constants';
+import { RequestReviewModal } from './RequestReview';
 
 interface RequestsListProps {
   requests: SpendingRequest[];
+  onApprove?: (requestId: number, reviewNotes: string) => void;
+  onReject?: (requestId: number, reviewNotes: string) => void;
+  userRole?: string;
 }
 
-export function RequestsList({ requests }: RequestsListProps) {
+export function RequestsList({ requests, onApprove, onReject, userRole }: RequestsListProps) {
+  const [reviewingRequest, setReviewingRequest] = useState<SpendingRequest | null>(null);
+
   if (requests.length === 0) {
     return (
       <div>
@@ -18,6 +25,20 @@ export function RequestsList({ requests }: RequestsListProps) {
       </div>
     );
   }
+
+  const handleApprove = (reviewNotes: string) => {
+    if (reviewingRequest && onApprove) {
+      onApprove(reviewingRequest.id, reviewNotes);
+      setReviewingRequest(null);
+    }
+  };
+
+  const handleReject = (reviewNotes: string) => {
+    if (reviewingRequest && onReject) {
+      onReject(reviewingRequest.id, reviewNotes);
+      setReviewingRequest(null);
+    }
+  };
 
   return (
     <div>
@@ -57,6 +78,18 @@ export function RequestsList({ requests }: RequestsListProps) {
             {/* Description */}
             <p className="text-sm text-gray-700 mb-3">{request.description}</p>
             
+            {/* Action Buttons for Pending Requests */}
+            {userRole === 'admin' && request.status === 'pending' && onApprove && onReject && (
+              <div className="flex gap-2 mb-3">
+                <button
+                  onClick={() => setReviewingRequest(request)}
+                  className="flex-1 bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 transition-colors text-sm font-medium"
+                >
+                  📝 Review Request
+                </button>
+              </div>
+            )}
+            
             {/* Metadata */}
             <div className="text-xs text-gray-500 border-t pt-3 space-y-1">
               <div>
@@ -76,6 +109,16 @@ export function RequestsList({ requests }: RequestsListProps) {
           </div>
         ))}
       </div>
+
+      {/* Review Modal */}
+      {reviewingRequest && (
+        <RequestReviewModal
+          request={reviewingRequest}
+          onApprove={handleApprove}
+          onReject={handleReject}
+          onClose={() => setReviewingRequest(null)}
+        />
+      )}
     </div>
   );
 }

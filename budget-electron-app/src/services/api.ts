@@ -109,6 +109,28 @@ export async function createSpendingRequest(
   return data;
 }
 
+//Update spending request status (approve/reject)
+export async function updateRequestStatus(
+  token: string,
+  requestId: number,
+  status: 'approved' | 'rejected',
+  reviewNotes?: string
+): Promise<SpendingRequestCreateResponse> {
+  const res = await fetch(`${API_BASE}/spending-requests/${requestId}/status`, {
+    method: 'PUT',
+    headers: getAuthHeaders(token),
+    body: JSON.stringify({ status, reviewNotes }),
+  });
+
+  const data = await res.json();
+
+  if (!res.ok) {
+    throw new Error(data.error || 'Failed to update request status');
+  }
+
+  return data;
+}
+
 // ============================================================================
 // AI PARSING
 // ============================================================================
