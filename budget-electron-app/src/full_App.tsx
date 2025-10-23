@@ -287,7 +287,16 @@ function App() {
             >
               My Grants
             </button>
-
+            <button
+              onClick={() => setView('create')}
+              className={`px-4 py-3 font-medium transition-colors ${
+                view === 'create'
+                  ? 'text-indigo-600 border-b-2 border-indigo-600'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              Create Request
+            </button>
             <button
               onClick={() => setView('requests')}
               className={`px-4 py-3 font-medium transition-colors ${
@@ -591,5 +600,5 @@ function App() {
     </div>
   );
 }
-
+*/
 export default App;
