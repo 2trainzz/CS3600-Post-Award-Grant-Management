@@ -25,11 +25,12 @@ export const STATUSES = {
   COMPLETED: 'completed',
 } as const;
 
-// Status color mapping for badges
+// Status color mapping for badges - darker theme
 export const STATUS_COLORS: Record<string, string> = {
-  pending: 'bg-yellow-100 text-yellow-800',
-  approved: 'bg-green-100 text-green-800',
-  rejected: 'bg-red-100 text-red-800',
-  completed: 'bg-blue-100 text-blue-800',
-  active: 'bg-green-100 text-green-800',
+  pending: 'bg-yellow-900 text-yellow-300',
+  approved: 'bg-green-900 text-green-300',
+  rejected: 'bg-red-900 text-red-300',
+  completed: 'bg-blue-900 text-blue-300',
+  active: 'bg-green-900 text-green-300',
+  closed: 'bg-gray-700 text-gray-300'
 };
