@@ -67,8 +67,46 @@ export async function createSpendingRequest(data: {
 //get all spending requests for a user
 export async function getUserSpendingRequests(userId: number) {
   logger.debug('Fetching spending requests for user', { userId });
+  // If the user is an admin, return all spending requests across the system
+  const user = await prisma.user.findUnique({ where: { id: userId }, select: { role: true } });
 
-  //find all spending requests where user is involved
+  if (user?.role === 'admin') {
+    // Fetch all userGrantRequest rows and group by spending request to include users
+    const allUserGrantRequests = await prisma.userGrantRequest.findMany({
+      include: {
+        spendingRequest: {
+          include: {
+            requestRuleFringes: {
+              include: { rule: true, fringeRate: true },
+            },
+          },
+        },
+        grant: true,
+        user: {
+          select: { id: true, username: true, firstName: true, lastName: true },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    // Group by spendingRequest id
+    const map = new Map<number, any>();
+    for (const ugr of allUserGrantRequests) {
+      const rid = ugr.spendingRequest.id;
+      if (!map.has(rid)) {
+        map.set(rid, {
+          ...ugr.spendingRequest,
+          grant: ugr.grant,
+          users: [],
+        });
+      }
+      map.get(rid).users.push({ ...ugr.user, role: ugr.role });
+    }
+
+    return Array.from(map.values());
+  }
+
+  // Non-admin: find all spending requests where user is involved
   const userGrantRequests = await prisma.userGrantRequest.findMany({
     where: { userId },
     include: {

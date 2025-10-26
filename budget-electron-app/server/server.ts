@@ -4,6 +4,8 @@
  * business logic in services/
  * utilities organized in utils/
  */
+// Load environment variables from .env into process.env
+import 'dotenv/config';
 
 import express from 'express';
 import cors from 'cors';

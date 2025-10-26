@@ -12,6 +12,10 @@ import { app, BrowserWindow, ipcMain } from 'electron';
 import path from 'path';
 import { fork, ChildProcess } from 'child_process';
 import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 // ============================================================================
 // CONFIGURATION
@@ -19,8 +23,6 @@ import { fileURLToPath } from 'url';
 
 const isDev = process.env.NODE_ENV === 'development';
 const serverPort = 3001;
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 // ============================================================================
 // STATE
