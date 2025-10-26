@@ -3,6 +3,71 @@
 @tailwind utilities;
 
 body {
-  @apply bg-gradient-to-br from-darkblue to-black text-white flex items-center justify-center min-h-screen;
-  font-family: 'Times New Roman', serif;
+  @apply text-white flex items-center justify-center min-h-screen;
+  background-color: #061226;
+  background-image:
+    linear-gradient(135deg, rgba(6,18,38,1), rgba(8,20,40,0.98), rgba(2,40,48,0.9)),
+    linear-gradient(160deg, rgba(3,29,45,0.7), rgba(6,18,38,0.7));
+  background-size: cover, cover;
+  background-position: center center;
+  position: relative;
+  overflow: hidden;
+}
+
+/* subtle repeating diagonal lines pattern (teal-tinted) */
+body::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: 
+    linear-gradient(45deg, rgba(255,255,255,0.02) 1px, transparent 1px),
+    linear-gradient(135deg, rgba(0,199,190,0.02) 1px, transparent 1px);
+  background-size: 40px 40px, 60px 60px;
+  opacity: 0.06;
+  pointer-events: none;
+  transform: translateZ(0);
+  animation: patternShift 14s linear infinite;
+  z-index: 0;
+}
+
+/* soft moving teal sheen across the background */
+body::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgba(0,199,190,0.00), rgba(0,199,190,0.03), rgba(0,199,190,0.00));
+  mix-blend-mode: screen;
+  pointer-events: none;
+  animation: sheenMove 8s linear infinite;
+  z-index: 0;
+}
+
+/* Ensure app content sits above decorative layers so inputs and UI are visible/interactable */
+#root,
+#app,
+#__next,
+main,
+.app-root {
+  position: relative;
+  z-index: 1;
+}
+
+/* Respect reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  body::before,
+  body::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+@keyframes patternShift {
+  0% { background-position: 0 0, 0 0; }
+  50% { background-position: 20px 20px, -30px -30px; }
+  100% { background-position: 0 0, 0 0; }
+}
+
+@keyframes sheenMove {
+  0% { transform: translateX(-30%); }
+  100% { transform: translateX(130%); }
 }
