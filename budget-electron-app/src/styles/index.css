@@ -3,21 +3,22 @@
 @tailwind utilities;
 
 body {
-  @apply text-white flex items-center justify-center min-h-screen;
+  @apply text-white min-h-screen;
   background-color: #061226;
   background-image:
     linear-gradient(135deg, rgba(6,18,38,1), rgba(8,20,40,0.98), rgba(2,40,48,0.9)),
     linear-gradient(160deg, rgba(3,29,45,0.7), rgba(6,18,38,0.7));
   background-size: cover, cover;
   background-position: center center;
+  background-attachment: fixed;
   position: relative;
-  overflow: hidden;
+  overflow-y: auto;
 }
 
 /* subtle repeating diagonal lines pattern (teal-tinted) */
 body::before {
   content: "";
-  position: absolute;
+  position: fixed;
   inset: 0;
   background-image: 
     linear-gradient(45deg, rgba(255,255,255,0.02) 1px, transparent 1px),
@@ -33,7 +34,7 @@ body::before {
 /* soft moving teal sheen across the background */
 body::after {
   content: "";
-  position: absolute;
+  position: fixed;
   inset: 0;
   background: linear-gradient(90deg, rgba(0,199,190,0.00), rgba(0,199,190,0.03), rgba(0,199,190,0.00));
   mix-blend-mode: screen;

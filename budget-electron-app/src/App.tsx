@@ -19,6 +19,7 @@ import { Navigation } from './components/layout/Navigation';
 import { GrantsList } from './components/GrantsList';
 import { CreateRequestForm } from './components/CreateRequestForm';
 import { RequestsList } from './components/RequestsList';
+import Modal from './components/Modal';
 
 //constants
 import { VIEWS } from './config/constants';
@@ -36,6 +37,9 @@ function App() {
   const [view, setView] = useState<
     typeof VIEWS[keyof typeof VIEWS]
   >(VIEWS.GRANTS);
+
+  //modal state
+  const [modalMessage, setModalMessage] = useState<string | null>(null);
 
   //combined error state for display
   const error = auth.error || grants.error || spending.error;
@@ -97,7 +101,7 @@ function App() {
 
     const success = await spending.createRequest(auth.token, data);
     if (success) {
-      alert('Spending request created successfully!');
+      setModalMessage('Spending request created successfully!');
       //switch to requests view and load them
       setView(VIEWS.REQUESTS);
       spending.loadRequests(auth.token);
@@ -124,7 +128,7 @@ function App() {
     );
 
     if (success) {
-      alert('Request approved successfully!');
+      setModalMessage('Request approved successfully!');
       // Reload requests and grants to show updated data
       spending.loadRequests(auth.token);
       grants.loadGrants(auth.token);
@@ -142,7 +146,7 @@ function App() {
     );
 
     if (success) {
-      alert('Request rejected.');
+      setModalMessage('Request rejected.');
       // Reload requests
       spending.loadRequests(auth.token);
     }
@@ -199,6 +203,7 @@ function App() {
             onSubmit={handleCreateRequest}
             onAiParse={handleAiParse}
             onClearAiData={spending.clearAiData}
+            onShowErrorModal={setModalMessage}
           />
         )}
 
@@ -211,6 +216,16 @@ function App() {
           />
         )}
       </main>
+
+      {/* Modal overlay*/}
+      {modalMessage && (
+        <Modal
+          title="Notification"
+          message={modalMessage}
+          onClose={() => setModalMessage(null)}
+          confirmText="Close"
+        />
+      )}
     </div>
   );
 }

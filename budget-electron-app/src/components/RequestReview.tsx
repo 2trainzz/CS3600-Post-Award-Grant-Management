@@ -71,8 +71,6 @@ export function RequestReviewModal({
             value={reviewNotes}
             onChange={(e) => setReviewNotes(e.target.value)}
             rows={3}
-            // make sure textarea receives focus and is keyboard accessible
-            autoFocus
             tabIndex={0}
             className="w-full p-3 rounded-md bg-dark-input border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-accent"
             placeholder="Add any comments about this decision..."
