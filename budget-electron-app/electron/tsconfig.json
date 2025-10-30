@@ -8,10 +8,10 @@
     "outDir": "../dist-electron",
     
     // Use ES2022 for ES module and import.meta support
-    "module": "ES2022",
+    "module": "es2022",
     
     // Target modern Node.js (Electron uses recent Node versions)
-    "target": "ES2022",
+    "target": "es2022",
     
     // Enable all strict type-checking options
     "strict": true,

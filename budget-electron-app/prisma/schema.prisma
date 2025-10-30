@@ -81,7 +81,7 @@ model SpendingRequest {
 
 model Rule {
   id           Int    @id @default(autoincrement())
-  ruleType     String //eg "spending_limit", "category_restrication"
+  ruleType     String //eg "travel", "student"
   policyHolder String //eg "federal" or "university"
   description  String @db.Text
 

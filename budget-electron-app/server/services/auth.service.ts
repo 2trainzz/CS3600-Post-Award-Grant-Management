@@ -1,4 +1,4 @@
-//auth.service -handles user registration and login
+//auth.service - handles user registration and login
 
 import bcrypt from 'bcrypt';
 import prisma from '../prisma';

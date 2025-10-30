@@ -1,222 +1,180 @@
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcrypt';
+import * as fs from 'fs';
+import * as path from 'path';
 
 const prisma = new PrismaClient();
 
+function readJsonFile(filename: string) {
+  const filePath = path.join(__dirname, 'seed', filename);
+  const fileContent = fs.readFileSync(filePath, 'utf-8');
+  return JSON.parse(fileContent);
+}
+
+const usersData = readJsonFile('User.json');
+const rulesData = readJsonFile('Rule.json');
+const fringeRatesData = readJsonFile('FringeRate.json');
+const grantsData = readJsonFile('Grant.json');
+const userGrantsData = readJsonFile('UserGrant.json');
+const spendingRequestsData = readJsonFile('SpendingRequest.json');
+const userGrantRequestsData = readJsonFile('UserGrantRequest.json')
+const requestRuleFringesData = readJsonFile('RequestRuleFringe.json')
+
 async function main() {
-  console.log('Starting seed...');
 
-  // Create test users
-  const hashedPassword = await bcrypt.hash('password123', 10);
+  await prisma.requestRuleFringe.deleteMany({}); 
+    await prisma.userGrantRequest.deleteMany({});
+    await prisma.userGrant.deleteMany({}); 
+    await prisma.spendingRequest.deleteMany({}); 
+    await prisma.grant.deleteMany({});
+    await prisma.user.deleteMany({}); 
+    await prisma.rule.deleteMany({});
+    await prisma.fringeRate.deleteMany({});
+
+    console.log('Old data wiped. Resetting auto-increment...');
+
+    // B. RESET AUTO-INCREMENT (Ensures new IDs start at 1)
+    // IMPORTANT: Use raw query to reset the ID counter for parent tables
+    await prisma.$executeRaw`ALTER TABLE users AUTO_INCREMENT = 1;`;
+    await prisma.$executeRaw`ALTER TABLE grants AUTO_INCREMENT = 1;`;
+    await prisma.$executeRaw`ALTER TABLE rules AUTO_INCREMENT = 1;`;
+    await prisma.$executeRaw`ALTER TABLE fringe_rates AUTO_INCREMENT = 1;`;
+    await prisma.$executeRaw`ALTER TABLE spending_requests AUTO_INCREMENT = 1;`;
+
+
+  console.log('Starting database seed...');
+
+  // Seed rules
+  console.log('Seeding rules...');
+  for (const ruleData of rulesData) {
+    await prisma.rule.create({
+      data: {
+        ruleType: ruleData.ruleType,
+        policyHolder: ruleData.policyHolder,
+        description: ruleData.description
+      }
+    });
+  }
+  console.log(`Created ${rulesData.length} rules`);
+
+  // Seed fringe rates
+  console.log('Seeding fringe rates...');
+  for (const rateData of fringeRatesData) {
+    await prisma.fringeRate.create({
+      data: {
+        description: rateData.description,
+        rate: rateData.rate
+      }
+    });
+  }
+  console.log(`Created ${fringeRatesData.length} fringe rates`);
+
+  console.log('Seeding users...');
+  for (const userData of usersData) {
+    // Hash password if it exists
+    const hashedPassword = userData.password 
+      ? await bcrypt.hash(userData.password, 10)
+      : await bcrypt.hash('password123', 10);
+
+    await prisma.user.create({
+      data: {
+        username: userData.username,
+        password: hashedPassword,
+        email: userData.email,
+        firstName: userData.firstName,
+        lastName: userData.lastName,
+        role: userData.role || 'user',
+        department: userData.department || 'computer science'
+      }
+    });
+  }
+  console.log(`Created ${usersData.length} users`);
+
+  // Seed grants
+  console.log('Seeding grants...');
+  for (const grantData of grantsData) {
+    await prisma.grant.create({
+      data: {
+        grantNumber: grantData.grantNumber,
+        grantName: grantData.grantName,
+        totalAmount: grantData.totalAmount,
+        remainingAmount: grantData.remainingAmount || grantData.totalAmount,
+        studentBalance: grantData.studentBalance,
+        travelBalance: grantData.travelBalance,
+        startDate: new Date(grantData.startDate),
+        endDate: new Date(grantData.endDate),
+        status: grantData.status || 'active',
+        description: grantData.description
+      }
+    });
+  }
+  console.log(`Created ${grantsData.length} grants`);
+
+  //now do dependencies
+
+  for (const userGrantData of userGrantsData) {
+    await prisma.userGrant.create({
+      data: {
+        userId: userGrantData.userId,
+        grantId: userGrantData.grantId,
+        role: userGrantData.role,
+        createdAt: new Date (userGrantData.createdAt)
+      }
+    });
+  }
+  console.log(`Created ${userGrantsData.length} usergrants`);
   
-  const admin = await prisma.user.create({
-    data: {
-      username: 'admin',
-      password: hashedPassword,
-      email: 'admin@example.com',
-      firstName: 'Admin',
-      lastName: 'User',
-      role: 'admin',
-      department: 'computer science'
-    }
-  });
-  console.log('Created admin user:', admin.username);
+  for (const spendingRequestData of spendingRequestsData) {
+    await prisma.spendingRequest.create({ 
+      data: {
+        amount: spendingRequestData.amount,
+        category: spendingRequestData.category,
+        description: spendingRequestData.description,
+        status: spendingRequestData.status,
+        requestDate: new Date (spendingRequestData.requestDate),
+        reviewDate: new Date (spendingRequestData.reviewDate),
+        reviewedBy: spendingRequestData.reviewedBy,
+        reviewNotes: spendingRequestData.reviewNotes,
+        createdAt: new Date(spendingRequestData.createdAt),
+        updatedAt: new Date (spendingRequestData.updatedAt)
+      }
+    });
+  }
+  console.log(`Seeded ${spendingRequestsData.length} SpendingRequests.`);
 
-  const researcher = await prisma.user.create({
-    data: {
-      username: 'researcher',
-      password: hashedPassword,
-      email: 'researcher@example.com',
-      firstName: 'Jane',
-      lastName: 'Researcher',
-      role: 'user',
-      department: 'computer science'
-    }
-  });
-  console.log('Created researcher user:', researcher.username);
+  for (const userGrantRequestData of userGrantRequestsData) {
+    await prisma.userGrantRequest.create({
+      data: {
+        userId: userGrantRequestData.userId,
+        grantId: userGrantRequestData.grantId,
+        spendingRequestId: userGrantRequestData.spendingRequestId,
+        role: userGrantRequestData.role,
+        createdAt: new Date (userGrantRequestData.createdAt)
+      }
+    })
+  }
+  console.log(`seeded ${spendingRequestsData.length} spendingrequests`);
 
-  // Create test grants
-  const grant1 = await prisma.grant.create({
-    data: {
-      grantNumber: 'NSF-2024-001',
-      grantName: 'AI Research Grant',
-      totalAmount: 500000,
-      remainingAmount: 500000,
-      studentBalance: 100000,
-      travelBalance: 50000,
-      startDate: new Date('2024-01-01'),
-      endDate: new Date('2026-12-31'),
-      status: 'active',
-      description: 'Research grant for artificial intelligence projects'
-    }
-  });
-  console.log('Created grant:', grant1.grantNumber);
+  for (const requestRuleFringeData of requestRuleFringesData) {
+    await prisma.requestRuleFringe.create({
+      data: {
+        spendingRequestId: requestRuleFringeData.spendingRequestId,
+        ruleId: requestRuleFringeData.ruleId,
+        fringeRateId: requestRuleFringeData.fringeRateId,
+        appliedAmount: requestRuleFringeData.appliedAmount,
+        notes: requestRuleFringeData.notes,
+        createdAt: new Date (requestRuleFringeData.createdAt)
+      }
+    })
+  }
+  console.log(`seeded ${requestRuleFringesData.length} requestrulefringes`);
 
-  const grant2 = await prisma.grant.create({
-    data: {
-      grantNumber: 'DOE-2024-002',
-      grantName: 'Data Science Initiative',
-      totalAmount: 300000,
-      remainingAmount: 300000,
-      studentBalance: 75000,
-      travelBalance: 25000,
-      startDate: new Date('2024-06-01'),
-      endDate: new Date('2027-05-31'),
-      status: 'active',
-      description: 'Data science research and development'
-    }
-  });
-  console.log('Created grant:', grant2.grantNumber);
-
-  // Link users to grants
-  await prisma.userGrant.create({
-    data: {
-      userId: admin.id,
-      grantId: grant1.id,
-      role: 'owner'
-    }
-  });
-
-  await prisma.userGrant.create({
-    data: {
-      userId: researcher.id,
-      grantId: grant1.id,
-      role: 'member'
-    }
-  });
-
-  await prisma.userGrant.create({
-    data: {
-      userId: admin.id,
-      grantId: grant2.id,
-      role: 'owner'
-    }
-  });
-  console.log('Linked users to grants');
-
-  // Create rules
-  const spendingLimitRule = await prisma.rule.create({
-    data: {
-      ruleType: 'spending_limit',
-      policyHolder: 'federal',
-      description: 'Single purchase limit of $5,000 without additional approval'
-    }
-  });
-
-  const travelRule = await prisma.rule.create({
-    data: {
-      ruleType: 'category_restriction',
-      policyHolder: 'university',
-      description: 'International travel requires 30-day advance notice'
-    }
-  });
-
-  const studentRule = await prisma.rule.create({
-    data: {
-      ruleType: 'category_restriction',
-      policyHolder: 'federal',
-      description: 'Student wages must not exceed 20 hours per week during academic year'
-    }
-  });
-  console.log('Created rules');
-
-  // Create fringe rates
-  const travelRate = await prisma.fringeRate.create({
-    data: {
-      description: 'travel',
-      rate: 0.00 // 0% fringe on travel
-    }
-  });
-
-  const studentRate = await prisma.fringeRate.create({
-    data: {
-      description: 'employee cost',
-      rate: 32.50 // 32.5% fringe on employee costs
-    }
-  });
-  console.log('Created fringe rates');
-
-  // Create sample spending requests
-  const travelRequest = await prisma.spendingRequest.create({
-    data: {
-      amount: 2500.00,
-      category: 'travel',
-      description: 'Conference attendance - ACM Computing Conference',
-      status: 'pending'
-    }
-  });
-
-  // Link the travel request to user, grant, rules, and rates
-  await prisma.userGrantRequest.create({
-    data: {
-      userId: researcher.id,
-      grantId: grant1.id,
-      spendingRequestId: travelRequest.id,
-      role: 'creator'
-    }
-  });
-
-  await prisma.requestRuleFringe.create({
-    data: {
-      spendingRequestId: travelRequest.id,
-      ruleId: travelRule.id,
-      fringeRateId: travelRate.id,
-      appliedAmount: 2500.00,
-      notes: 'Travel expenses with no fringe rate applied'
-    }
-  });
-  console.log('Created travel spending request');
-
-  const studentRequest = await prisma.spendingRequest.create({
-    data: {
-      amount: 5000.00,
-      category: 'students',
-      description: 'Graduate research assistant salary - Spring 2024',
-      status: 'approved',
-      reviewDate: new Date(),
-      reviewedBy: admin.id,
-      reviewNotes: 'Approved for spring semester'
-    }
-  });
-
-  await prisma.userGrantRequest.create({
-    data: {
-      userId: researcher.id,
-      grantId: grant1.id,
-      spendingRequestId: studentRequest.id,
-      role: 'creator'
-    }
-  });
-
-  await prisma.userGrantRequest.create({
-    data: {
-      userId: admin.id,
-      grantId: grant1.id,
-      spendingRequestId: studentRequest.id,
-      role: 'approver'
-    }
-  });
-
-  await prisma.requestRuleFringe.create({
-    data: {
-      spendingRequestId: studentRequest.id,
-      ruleId: studentRule.id,
-      fringeRateId: studentRate.id,
-      appliedAmount: 5000.00,
-      notes: 'Student wages with 32.5% fringe rate'
-    }
-  });
-  console.log('Created student spending request');
-
-  console.log('Seed completed successfully!');
-  console.log('\nTest credentials:');
-  console.log('Username: admin | Password: password123');
-  console.log('Username: researcher | Password: password123');
+  console.log('Database seed complete!');
 }
 
 main()
   .catch((e) => {
-    console.error('Error seeding database:', e);
+    console.error(e);
     process.exit(1);
   })
   .finally(async () => {

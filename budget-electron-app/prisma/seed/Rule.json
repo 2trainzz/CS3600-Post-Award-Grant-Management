@@ -1,0 +1,10 @@
+[{"id":1,"ruleType":"student","policyHolder":"Federal Bureau of Investigation","description":"Insufficient information provided"},
+{"id":2,"ruleType":"general","policyHolder":"Yale University","description":"Invalid request format"},
+{"id":3,"ruleType":"student","policyHolder":"University of California","description":"Insufficient information provided"},
+{"id":4,"ruleType":"student","policyHolder":"Berkeley","description":"Rule violation detected"},
+{"id":5,"ruleType":"general","policyHolder":"Yale University","description":"Invalid request format"},
+{"id":6,"ruleType":"general","policyHolder":"Federal Bureau of Investigation","description":"Invalid request format"},
+{"id":7,"ruleType":"student","policyHolder":"Berkeley","description":"Invalid request format"},
+{"id":8,"ruleType":"student","policyHolder":"Harvard University","description":"Invalid request format"},
+{"id":9,"ruleType":"general","policyHolder":"Stanford University","description":"Rule violation detected"},
+{"id":10,"ruleType":"travel","policyHolder":"Harvard University","description":"Insufficient information provided"}]

@@ -42,19 +42,36 @@ export async function createSpendingRequest(data: {
       },
     });
 
-    //link rules and fringe rates if provided
-    if (data.ruleIds && data.fringeRateIds && data.ruleIds.length > 0 && data.fringeRateIds.length > 0) {
-      for (const ruleId of data.ruleIds) {
-        for (const fringeRateId of data.fringeRateIds) {
-          await tx.requestRuleFringe.create({
-            data: {
-              spendingRequestId: spendingRequest.id,
-              ruleId,
-              fringeRateId,
-            },
-          });
+    //find rules based on type
+    const applicableRules = await tx.rule.findMany({
+        where: {
+        OR: [
+        { ruleType: data.category },   //rules matching the category (travel/students)
+        { ruleType: 'general' }        //and all general rules
+        ]
+    }
+    });
+
+    //get fringe rate for this category
+    const fringeRate = await tx.fringeRate.findFirst({
+    where: {
+        description: data.category === 'travel' ? 'travel' : 'employee cost'
+    }
+    });
+
+    //link each rule and fringe rate to request
+    if (fringeRate) {
+    for (const rule of applicableRules) {
+        await tx.requestRuleFringe.create({
+        data: {
+            spendingRequestId: spendingRequest.id,
+            ruleId: rule.id,
+            fringeRateId: fringeRate.id,
+            appliedAmount: data.amount,
+            notes: `Auto-linked: ${rule.ruleType} rule applied to ${data.category} request`
         }
-      }
+        });
+    }
     }
 
     return spendingRequest;
