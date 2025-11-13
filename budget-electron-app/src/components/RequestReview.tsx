@@ -1,6 +1,6 @@
 /**
  * RequestReviewModal Component
- * * Modal for approving or rejecting spending requests
+ * Modal for approving or rejecting spending requests
  */
 
 import { useState } from 'react';
@@ -21,6 +21,42 @@ export function RequestReviewModal({
 }: RequestReviewProps) {
   const [reviewNotes, setReviewNotes] = useState('');
 
+  // Helper function to get AI pre-approval badge styling
+  const getPreApprovalBadge = (recommendation: string) => {
+    switch (recommendation) {
+      case 'approved':
+        return {
+          bg: 'bg-green-500/20',
+          text: 'text-green-400',
+          border: 'border-green-500/30',
+          label: 'AI Pre-Approved',
+          icon: '✓'
+        };
+      case 'needs_review':
+        return {
+          bg: 'bg-yellow-500/20',
+          text: 'text-yellow-400',
+          border: 'border-yellow-500/30',
+          label: 'AI: Needs Review',
+          icon: '⚠'
+        };
+      case 'rejected':
+        return {
+          bg: 'bg-red-500/20',
+          text: 'text-red-400',
+          border: 'border-red-500/30',
+          label: 'AI: Concerns',
+          icon: '✗'
+        };
+      default:
+        return null;
+    }
+  };
+
+  const preApprovalBadge = request.preApprovalStatus 
+    ? getPreApprovalBadge(request.preApprovalStatus.recommendation)
+    : null;
+
   return (
     // Backdrop
     <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50">
@@ -34,8 +70,52 @@ export function RequestReviewModal({
           Review Spending Request
         </h2>
 
+        {/* AI Analysis Section */}
+        {request.preApprovalStatus && (
+          <div className="mb-4">
+            <h3 className="text-sm font-semibold text-gray-300 mb-2 flex items-center gap-2">
+              <span className="text-accent">🤖</span> AI Analysis
+            </h3>
+            
+            {/* AI Pre-Approval Badge */}
+            {preApprovalBadge && (
+              <div className={`p-4 rounded-md border mb-3 ${preApprovalBadge.bg} ${preApprovalBadge.border}`}>
+                <div className={`flex items-center gap-2 text-sm font-semibold ${preApprovalBadge.text} mb-2`}>
+                  <span className="text-xl">{preApprovalBadge.icon}</span>
+                  <span>{preApprovalBadge.label}</span>
+                </div>
+                {request.preApprovalStatus.reasoning && (
+                  <p className="text-xs text-gray-300">
+                    <span className="font-semibold">Reasoning:</span> {request.preApprovalStatus.reasoning}
+                  </p>
+                )}
+                {request.confidence !== null && request.confidence !== undefined && (
+                  <p className="text-xs text-gray-300 mt-1">
+                    <span className="font-semibold">Confidence:</span> {(request.confidence * 100).toFixed(0)}%
+                  </p>
+                )}
+              </div>
+            )}
+
+            {/* AI Warnings */}
+            {request.warnings && request.warnings.length > 0 && (
+              <div className="p-3 rounded-md bg-orange-500/10 border border-orange-500/30">
+                <div className="text-sm font-semibold text-orange-400 mb-2">
+                  ⚠ AI Detected Concerns:
+                </div>
+                <ul className="text-xs text-gray-300 space-y-1">
+                  {request.warnings.map((warning, idx) => (
+                    <li key={idx}>• {warning}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Request Details */}
         <div className="bg-dark-input rounded-md p-4 mb-4 border border-gray-700">
+          <h3 className="text-sm font-semibold text-gray-300 mb-3">Request Details</h3>
           <div className="grid grid-cols-2 gap-3 text-sm">
             <div>
               <span className="font-medium text-gray-400">Category:</span>
@@ -55,6 +135,12 @@ export function RequestReviewModal({
                 </span>
               </div>
             )}
+            <div className="col-span-2">
+              <span className="font-medium text-gray-400">Requested:</span>
+              <span className="ml-2 text-white">
+                {new Date(request.requestDate).toLocaleString()}
+              </span>
+            </div>
           </div>
           <div className="mt-3">
             <span className="font-medium text-gray-400 text-sm">Description:</span>
