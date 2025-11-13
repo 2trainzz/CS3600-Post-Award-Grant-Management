@@ -41,6 +41,11 @@ export function useSpendingRequests() {
       amount: number;
       category: string;
       description: string;
+      // AI pre-approval data
+      aiPreApprovalRecommendation?: string;
+      aiPreApprovalReasoning?: string;
+      aiConfidence?: number;
+      aiWarnings?: string[];
     }
   ): Promise<boolean> => {
     setError('');

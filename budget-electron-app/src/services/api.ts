@@ -92,6 +92,11 @@ export async function createSpendingRequest(
     amount: number;
     category: string;
     description: string;
+    // AI pre-approval fields 
+    aiPreApprovalRecommendation?: string;
+    aiPreApprovalReasoning?: string;
+    aiConfidence?: number;
+    aiWarnings?: string[];
   }
 ): Promise<SpendingRequestCreateResponse> {
   const res = await fetch(`${API_BASE}/spending-requests`, {

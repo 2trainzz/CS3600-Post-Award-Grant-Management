@@ -17,9 +17,9 @@ const router = Router();
 //POST /api/spending-requests -create a new spending request
 router.post('/', authenticate, async (req, res) => {
   try {
-    const { grantId, amount, category, description, ruleIds, fringeRateIds } = req.body;
+    const { grantId, amount, category, description, ruleIds, fringeRateIds, aiPreApprovalRecommendation, aiPreApprovalReasoning, aiConfidence, aiWarnings } = req.body;
     const spendingRequest = await createSpendingRequest(
-      { grantId, amount, category, description, ruleIds, fringeRateIds },
+      { grantId, amount, category, description, ruleIds, fringeRateIds, aiPreApprovalRecommendation, aiPreApprovalReasoning, aiConfidence, aiWarnings },
       req.userId!
     );
     res.json({ spendingRequest });

@@ -69,6 +69,12 @@ model SpendingRequest {
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
+  // AI Pre-Approval Fields
+  aiPreApprovalRecommendation String?   // "approved", "needs_review", "rejected"
+  aiPreApprovalReasoning      String?   @db.Text
+  aiConfidence                Decimal?  @db.Decimal(3, 2) // 0.00 to 1.00
+  aiWarnings                  String?   @db.Text // JSON array stored as text
+
   //users and grants relationship
   userGrantRequests UserGrantRequest[]
 

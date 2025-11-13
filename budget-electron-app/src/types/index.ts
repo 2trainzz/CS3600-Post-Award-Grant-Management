@@ -54,10 +54,12 @@ export interface AiParsedData {
   category: 'travel' | 'students';
   amount: number;
   description: string;
+  confidence?: number;
   suggestedRules: number[];
   suggestedFringeRates: number[];
-  warnings: string[];
-  confidence: number;
+  warnings?: string[];
+  preApprovalRecommendation?: string;
+  preApprovalReasoning?: string;
   grant?: {
     id: number;
     name: string;

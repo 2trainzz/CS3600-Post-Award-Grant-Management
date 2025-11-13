@@ -12,7 +12,13 @@ export async function createSpendingRequest(data: {
   description: string;
   ruleIds?: number[];
   fringeRateIds?: number[];
+  // AI pre-approval data 
+  aiPreApprovalRecommendation?: string;
+  aiPreApprovalReasoning?: string;
+  aiConfidence?: number;
+  aiWarnings?: string[];
 }, userId: number) {
+  console.log('Backend received data:', data); 
   logger.info('Creating spending request', { userId, grantId: data.grantId });
 
   //check if user has access to this grant
@@ -23,12 +29,17 @@ export async function createSpendingRequest(data: {
 
   //create spending request and link user/grant in a transaction
   const result = await prisma.$transaction(async (tx) => {
-    // Create the spending request
+    // Create the spending request with AI data
     const spendingRequest = await tx.spendingRequest.create({
       data: {
         amount: data.amount,
         category: data.category,
         description: data.description,
+        // Save AI pre-approval data if provided
+        aiPreApprovalRecommendation: data.aiPreApprovalRecommendation || null,
+        aiPreApprovalReasoning: data.aiPreApprovalReasoning || null,
+        aiConfidence: data.aiConfidence || null,
+        aiWarnings: data.aiWarnings ? JSON.stringify(data.aiWarnings) : null,
       },
     });
 
@@ -111,10 +122,19 @@ export async function getUserSpendingRequests(userId: number) {
     for (const ugr of allUserGrantRequests) {
       const rid = ugr.spendingRequest.id;
       if (!map.has(rid)) {
+        const sr = ugr.spendingRequest;
         map.set(rid, {
-          ...ugr.spendingRequest,
+          ...sr,
           grant: ugr.grant,
           users: [],
+          // Parse AI data for frontend
+          preApprovalStatus: sr.aiPreApprovalRecommendation ? {
+            recommendation: sr.aiPreApprovalRecommendation,
+            reasoning: sr.aiPreApprovalReasoning,
+            requiresHumanReview: true,
+          } : null,
+          warnings: sr.aiWarnings ? JSON.parse(sr.aiWarnings) : [],
+          confidence: sr.aiConfidence ? parseFloat(sr.aiConfidence.toString()) : null,
         });
       }
       map.get(rid).users.push({ ...ugr.user, role: ugr.role });
@@ -151,12 +171,23 @@ export async function getUserSpendingRequests(userId: number) {
   });
 
   //transform data for frontend
-  const requests = userGrantRequests.map((ugr) => ({
-    ...ugr.spendingRequest,
-    grant: ugr.grant,
-    userRole: ugr.role,
-    users: [ugr.user],
-  }));
+  const requests = userGrantRequests.map((ugr) => {
+    const sr = ugr.spendingRequest;
+    return {
+      ...sr,
+      grant: ugr.grant,
+      userRole: ugr.role,
+      users: [ugr.user],
+      // Parse AI data for frontend
+      preApprovalStatus: sr.aiPreApprovalRecommendation ? {
+        recommendation: sr.aiPreApprovalRecommendation,
+        reasoning: sr.aiPreApprovalReasoning,
+        requiresHumanReview: true,
+      } : null,
+      warnings: sr.aiWarnings ? JSON.parse(sr.aiWarnings) : [],
+      confidence: sr.aiConfidence ? parseFloat(sr.aiConfidence.toString()) : null,
+    };
+  });
 
   return requests;
 }
@@ -203,9 +234,18 @@ export async function getGrantSpendingRequests(grantId: number, userId: number) 
   for (const ugr of userGrantRequests) {
     const requestId = ugr.spendingRequest.id;
     if (!requestMap.has(requestId)) {
+      const sr = ugr.spendingRequest;
       requestMap.set(requestId, {
-        ...ugr.spendingRequest,
+        ...sr,
         users: [],
+        // Parse AI data for frontend
+        preApprovalStatus: sr.aiPreApprovalRecommendation ? {
+          recommendation: sr.aiPreApprovalRecommendation,
+          reasoning: sr.aiPreApprovalReasoning,
+          requiresHumanReview: true,
+        } : null,
+        warnings: sr.aiWarnings ? JSON.parse(sr.aiWarnings) : [],
+        confidence: sr.aiConfidence ? parseFloat(sr.aiConfidence.toString()) : null,
       });
     }
     requestMap.get(requestId).users.push({
@@ -259,7 +299,21 @@ export async function getSpendingRequestDetails(requestId: number, userId: numbe
     },
   });
 
-  return spendingRequest;
+  if (!spendingRequest) {
+    throw new Error('Spending request not found');
+  }
+
+  // Parse AI data for frontend
+  return {
+    ...spendingRequest,
+    preApprovalStatus: spendingRequest.aiPreApprovalRecommendation ? {
+      recommendation: spendingRequest.aiPreApprovalRecommendation,
+      reasoning: spendingRequest.aiPreApprovalReasoning,
+      requiresHumanReview: true,
+    } : null,
+    warnings: spendingRequest.aiWarnings ? JSON.parse(spendingRequest.aiWarnings) : [],
+    confidence: spendingRequest.aiConfidence ? parseFloat(spendingRequest.aiConfidence.toString()) : null,
+  };
 }
 
 //add user to an existing spending request
@@ -364,7 +418,6 @@ export async function updateRequestStatus(
   );
 
   //check if reviewer has admin role to review grant
-  //check if user has access to this request
   const adminPower = await prisma.user.findUnique({
     where: {
         id: reviewerId,

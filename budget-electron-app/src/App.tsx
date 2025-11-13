@@ -99,9 +99,24 @@ function App() {
   }) => {
     if (!auth.token) return;
 
-    const success = await spending.createRequest(auth.token, data);
+    const requestData = {
+      ...data,
+      ...(spending.aiParsedData?.preApprovalRecommendation && {
+        aiPreApprovalRecommendation: spending.aiParsedData.preApprovalRecommendation,
+        aiPreApprovalReasoning: spending.aiParsedData.preApprovalReasoning,
+        aiConfidence: spending.aiParsedData.confidence,
+        aiWarnings: spending.aiParsedData.warnings,
+      }),
+    };
+
+     console.log('Sending request data:', requestData); 
+      console.log('AI Parsed Data:', spending.aiParsedData); 
+
+    const success = await spending.createRequest(auth.token, requestData);
     if (success) {
       setModalMessage('Spending request created successfully!');
+      //clear AI data after submission
+      spending.clearAiData();
       //switch to requests view and load them
       setView(VIEWS.REQUESTS);
       spending.loadRequests(auth.token);
