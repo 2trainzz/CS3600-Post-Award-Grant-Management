@@ -5,7 +5,8 @@ import {
   fetchSpendingRequests, 
   createSpendingRequest,
   parseSpendingRequestWithAI,
-  updateRequestStatus 
+  updateRequestStatus,
+  addRequestComment, 
 } from '../services/api';
 import type { SpendingRequest, AiParsedData } from '../types';
 
@@ -111,6 +112,23 @@ export function useSpendingRequests() {
   //clear err message
   const clearError = () => setError('');
 
+  //add a comment to a spending request
+  const addComment = async (
+    token: string,
+    requestId: number,
+    comment: string
+  ): Promise<boolean> => {
+    setError('');
+
+    try {
+      await addRequestComment(token, requestId, comment);
+      return true;
+    } catch (err: any) {
+      setError(err.message || 'Failed to add comment');
+      return false;
+    }
+  };
+
   return {
     requests,
     loading,
@@ -121,6 +139,7 @@ export function useSpendingRequests() {
     createRequest,
     parseWithAI,
     updateStatus,
+    addComment,
     clearAiData,
     clearError,
   };

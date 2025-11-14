@@ -136,6 +136,27 @@ export async function updateRequestStatus(
   return data;
 }
 
+//add a comment to a spending request (faculty review)
+export async function addRequestComment(
+  token: string,
+  requestId: number,
+  comment: string
+): Promise<SpendingRequestCreateResponse> {
+  const res = await fetch(`${API_BASE}/spending-requests/${requestId}/comment`, {
+    method: 'POST',
+    headers: getAuthHeaders(token),
+    body: JSON.stringify({ comment }),
+  });
+
+  const data = await res.json();
+
+  if (!res.ok) {
+    throw new Error(data.error || 'Failed to add comment');
+  }
+
+  return data;
+}
+
 // ============================================================================
 // AI PARSING
 // ============================================================================

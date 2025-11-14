@@ -168,6 +168,22 @@ function App() {
   };
 
   // ============================================================================
+  // COMMENT HANDLERS
+  // ============================================================================
+
+  const handleAddComment = async (requestId: number, comment: string) => {
+    if (!auth.token) return;
+
+    const success = await spending.addComment(auth.token, requestId, comment);
+
+    if (success) {
+      alert('Comment added successfully!');
+      // Reload requests to show the new comment
+      spending.loadRequests(auth.token);
+    }
+  };
+
+  // ============================================================================
   // EFFECTS
   // ============================================================================
 
@@ -228,6 +244,7 @@ function App() {
             onApprove={handleApprove}
             onReject={handleReject}
             userRole={auth.user?.role}
+            onAddComment={handleAddComment}
           />
         )}
       </main>

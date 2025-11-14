@@ -135,6 +135,15 @@ export function RequestReviewModal({
                 </span>
               </div>
             )}
+            {/* ADDED THIS: Display who created the request */}
+            {request.users && request.users.length > 0 && (
+              <p className="text-xs text-gray-500 mt-1">
+                Submitted by: {(() => {
+                  const creator = request.users.find(u => u.role === 'creator');
+                  return creator ? `${creator.firstName} ${creator.lastName}` : 'Unknown';
+                })()}
+              </p>
+            )}
             <div className="col-span-2">
               <span className="font-medium text-gray-400">Requested:</span>
               <span className="ml-2 text-white">

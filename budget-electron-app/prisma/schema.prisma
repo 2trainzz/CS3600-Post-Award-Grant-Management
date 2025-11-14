@@ -20,7 +20,7 @@ model User {
   email      String @unique
   firstName  String
   lastName   String
-  role       String @default("user") //eg user, admin, approver
+  role       String @default("user") //eg student, faculty, admin
   department String @default("computer science")
 
   //many-to-many relationships with grants

@@ -48,6 +48,11 @@ CREATE TABLE `spending_requests` (
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
 
+    `aiConfidence` DECIMAL(3, 2) NULL,
+    `aiPreApprovalReasoning` TEXT NULL,
+    `aiPreApprovalRecommendation` VARCHAR(191) NULL,
+    `aiWarnings` TEXT NULL,
+
     INDEX `spending_requests_status_idx`(`status`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;

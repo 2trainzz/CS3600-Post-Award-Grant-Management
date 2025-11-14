@@ -2,6 +2,9 @@
  * All data types used throughout the application
  */
 
+import { Decimal } from "@prisma/client/runtime/library";
+import { string } from "zod";
+
 //user data structure
 export interface User {
   id: number;
@@ -38,6 +41,10 @@ export interface SpendingRequest {
   reviewDate?: string;
   reviewedBy?: number;
   reviewNotes?: string;
+  aiPreApprovalRecommendation: string;
+  aiPreApprovalReasoning:      string;
+  aiConfidence:                string | number;
+  aiWarnings:                  string;
   grant?: Grant;
   userRole?: string;
   users?: Array<{

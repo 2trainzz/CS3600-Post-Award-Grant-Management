@@ -92,58 +92,47 @@ export async function createSpendingRequest(data: {
   return result;
 }
 
-//get all spending requests for a user
+//get all spending requests for a user - admin/faculty will get all for their grants, students will only get their own requests
 export async function getUserSpendingRequests(userId: number) {
   logger.debug('Fetching spending requests for user', { userId });
-  // If the user is an admin, return all spending requests across the system
+  //get role to know which requests to return
   const user = await prisma.user.findUnique({ where: { id: userId }, select: { role: true } });
 
-  if (user?.role === 'admin') {
-    // Fetch all userGrantRequest rows and group by spending request to include users
-    const allUserGrantRequests = await prisma.userGrantRequest.findMany({
-      include: {
-        spendingRequest: {
-          include: {
-            requestRuleFringes: {
-              include: { rule: true, fringeRate: true },
-            },
-          },
-        },
-        grant: true,
-        user: {
-          select: { id: true, username: true, firstName: true, lastName: true },
-        },
-      },
-      orderBy: { createdAt: 'desc' },
+  if (user?.role === 'admin' || user?.role === 'faculty') {
+    // Find all grants the user has access to
+    const userGrants = await prisma.userGrant.findMany({
+      where: { userId },
+      select: { grantId: true },
     });
 
-    // Group by spendingRequest id
-    const map = new Map<number, any>();
-    for (const ugr of allUserGrantRequests) {
-      const rid = ugr.spendingRequest.id;
-      if (!map.has(rid)) {
-        const sr = ugr.spendingRequest;
-        map.set(rid, {
-          ...sr,
-          grant: ugr.grant,
-          users: [],
-          // Parse AI data for frontend
-          preApprovalStatus: sr.aiPreApprovalRecommendation ? {
-            recommendation: sr.aiPreApprovalRecommendation,
-            reasoning: sr.aiPreApprovalReasoning,
-            requiresHumanReview: true,
-          } : null,
-          warnings: sr.aiWarnings ? JSON.parse(sr.aiWarnings) : [],
-          confidence: sr.aiConfidence ? parseFloat(sr.aiConfidence.toString()) : null,
-        });
-      }
-      map.get(rid).users.push({ ...ugr.user, role: ugr.role });
+    if (userGrants.length === 0) {
+      return [];
     }
 
-    return Array.from(map.values());
+    // Fetch requests from each grant using the existing function
+    const allRequests = [];
+    for (const userGrant of userGrants) {
+      try {
+        const grantRequests = await getGrantSpendingRequests(userGrant.grantId, userId);
+        allRequests.push(...grantRequests);
+      } catch (error) {
+        // Skip grants where access check fails (shouldn't happen, but just in case)
+        logger.error('Error fetching grant requests', { 
+          grantId: userGrant.grantId, 
+          error 
+        });
+      }
+    }
+
+    // Remove duplicate requests (in case same request appears multiple times)
+    const uniqueRequests = Array.from(
+      new Map(allRequests.map(req => [req.id, req])).values()
+    );
+
+    return uniqueRequests;
   }
 
-  // Non-admin: find all spending requests where user is involved
+  // student: find all spending requests where user is involved
   const userGrantRequests = await prisma.userGrantRequest.findMany({
     where: { userId },
     include: {
@@ -432,6 +421,38 @@ export async function updateRequestStatus(
     throw new Error('Access denied - you do not have permission to approve this grant');
   }
 
+  // Get reviewer info
+  const reviewer = await prisma.user.findUnique({
+    where: { id: reviewerId },
+    select: { firstName: true, lastName: true, role: true }
+  });
+
+  if (!reviewer) {
+    throw new Error('Reviewer not found');
+  }
+
+  // Check if reviewer is admin
+  if (reviewer.role !== 'admin') {
+    throw new Error('Only admins can approve or reject requests');
+  }
+
+  // Get current request to access existing notes
+  const currentRequest = await prisma.spendingRequest.findUnique({
+    where: { id: requestId }
+  });
+
+  // Format the new note with timestamp and user info
+  const timestamp = new Date().toLocaleString();
+  const statusAction = status === 'approved' ? 'APPROVED' : 'REJECTED';
+  const newNote = reviewNotes 
+    ? `[${timestamp}] ${reviewer.firstName} ${reviewer.lastName} (${reviewer.role}) ${statusAction}: ${reviewNotes}`
+    : `[${timestamp}] ${reviewer.firstName} ${reviewer.lastName} (${reviewer.role}) ${statusAction} the request.`;
+  
+  // Append to existing review notes (don't replace!)
+  const updatedNotes = currentRequest?.reviewNotes 
+    ? `${currentRequest.reviewNotes}\n\n${newNote}`
+    : newNote;
+
   // Update the spending request
   const updatedRequest = await prisma.$transaction(async (tx) => {
     // Update request status
@@ -441,7 +462,7 @@ export async function updateRequestStatus(
         status,
         reviewDate: new Date(),
         reviewedBy: reviewerId,
-        reviewNotes,
+        reviewNotes: updatedNotes,
       },
     });
 
@@ -493,5 +514,84 @@ export async function updateRequestStatus(
   });
 
   logger.info('Request status updated', { requestId, status });
+  return updatedRequest;
+}
+
+/**
+ * Add a comment/review to a spending request (faculty)
+ * Doesn't change status, just adds notes for admin to see
+ */
+export async function addRequestComment(
+  requestId: number,
+  comment: string,
+  userId: number
+) {
+  logger.info('Adding comment to request', { requestId, userId });
+
+  //get the request to find the grant
+  const userGrantRequest = await prisma.userGrantRequest.findFirst({
+    where: { spendingRequestId: requestId },
+  });
+
+  if (!userGrantRequest) {
+    throw new Error('Spending request not found');
+  }
+
+  //check user has access to the grant
+  const hasAccess = await checkGrantAccess(userGrantRequest.grantId, userId);
+  if (!hasAccess) {
+    throw new Error('Access denied - you do not have access to this grant');
+  }
+
+  //get user info for the comment
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { firstName: true, lastName: true, role: true }
+  });
+
+  if (!user) {
+    throw new Error('User not found');
+  }
+
+  //get current request
+  const request = await prisma.spendingRequest.findUnique({
+    where: { id: requestId }
+  });
+
+  //format the new comment with timestamp and user info
+  const timestamp = new Date().toLocaleString();
+  const newComment = `[${timestamp}] ${user.firstName} ${user.lastName} (${user.role}): ${comment}`;
+  
+  //append to existing review notes
+  const updatedNotes = request?.reviewNotes 
+    ? `${request.reviewNotes}\n\n${newComment}`
+    : newComment;
+
+  //update the request
+  const updatedRequest = await prisma.spendingRequest.update({
+    where: { id: requestId },
+    data: { reviewNotes: updatedNotes }
+  });
+
+  //add user as reviewer if not already linked
+  const existingLink = await prisma.userGrantRequest.findFirst({
+    where: {
+      userId,
+      spendingRequestId: requestId
+    }
+  });
+
+  if (!existingLink) {
+    await prisma.userGrantRequest.create({
+      data: {
+        userId,
+        grantId: userGrantRequest.grantId,
+        spendingRequestId: requestId,
+        role: 'reviewer'
+      }
+    });
+  }
+
+  logger.info('Comment added to request', { requestId });
   return updatedRequest;
 }

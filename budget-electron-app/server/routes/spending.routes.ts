@@ -8,7 +8,8 @@ import {
   getSpendingRequestDetails,
   addUserToSpendingRequest,
   addRuleFringeToRequest,
-  updateRequestStatus
+  updateRequestStatus,
+  addRequestComment,
 } from '../services/spending.service';
 import { authenticate } from '../middleware/auth.middleware';
 
@@ -120,6 +121,35 @@ router.put('/:id/status', authenticate, async (req, res) => {
       requestId,
       status,
       reviewNotes,
+      req.userId!
+    );
+
+    res.json({ spendingRequest: updatedRequest });
+  } catch (error: any) {
+    if (error.message.includes('Access denied')) {
+      res.status(403).json({ error: error.message });
+    } else if (error.message === 'Spending request not found') {
+      res.status(404).json({ error: error.message });
+    } else {
+      res.status(400).json({ error: error.message });
+    }
+  }
+});
+
+// POST /api/spending-requests/:id/comment -add a comment to a spending request (faculty can comment without approving)
+router.post('/:id/comment', authenticate, async (req, res) => {
+  try {
+    const requestId = parseInt(req.params.id);
+    const { comment } = req.body;
+
+    if (!comment || !comment.trim()) {
+      return res.status(400).json({ error: 'Comment cannot be empty' });
+    }
+
+    const { addRequestComment } = await import('../services/spending.service');
+    const updatedRequest = await addRequestComment(
+      requestId,
+      comment,
       req.userId!
     );
 

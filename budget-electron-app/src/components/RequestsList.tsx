@@ -4,16 +4,20 @@ import { useState } from 'react';
 import type { SpendingRequest } from '../types';
 import { STATUS_COLORS } from '../config/constants';
 import { RequestReviewModal } from './RequestReview';
+import { string } from 'zod';
 
 interface RequestsListProps {
   requests: SpendingRequest[];
   onApprove?: (requestId: number, reviewNotes: string) => void;
   onReject?: (requestId: number, reviewNotes: string) => void;
   userRole?: string;
+  onAddComment?: (requestId: number, comment: string) => void;
 }
 
-export function RequestsList({ requests, onApprove, onReject, userRole }: RequestsListProps) {
+export function RequestsList({ requests, onApprove, onReject, userRole, onAddComment }: RequestsListProps) {
   const [reviewingRequest, setReviewingRequest] = useState<SpendingRequest | null>(null);
+  const [commentingRequest, setCommentingRequest] = useState<SpendingRequest | null>(null);
+  const [commentText, setCommentText] = useState('');
   const [sortBy, setSortBy] = useState<'newest' | 'oldest' | 'ai-approved' | 'ai-concerns'>('newest');
   const [activeTab, setActiveTab] = useState<'pending' | 'history'>('pending');
 
@@ -35,6 +39,14 @@ export function RequestsList({ requests, onApprove, onReject, userRole }: Reques
     if (reviewingRequest && onReject) {
       onReject(reviewingRequest.id, reviewNotes);
       setReviewingRequest(null);
+    }
+  };
+
+  const handleAddComment = () => {
+    if (commentingRequest && onAddComment && commentText.trim()) {
+      onAddComment(commentingRequest.id, commentText);
+      setCommentingRequest(null);
+      setCommentText('');
     }
   };
 
@@ -252,6 +264,16 @@ export function RequestsList({ requests, onApprove, onReject, userRole }: Reques
                 )}
                 
                 {/* Action Buttons for Pending Requests */}
+                {userRole === 'faculty' && request.status === 'pending' && onAddComment && (
+                  <div className="flex gap-2 mb-3">
+                    <button
+                      onClick={() => setCommentingRequest(request)}
+                      className="flex-1 bg-accent text-darkblue py-2 px-4 rounded-md hover:bg-[#52e0c4] transition-colors text-sm font-semibold"
+                    >
+                      Add Comment
+                    </button>
+                  </div>
+                )}
                 {userRole === 'admin' && request.status === 'pending' && onApprove && onReject && (
                   <div className="flex gap-2 mb-3">
                     <button
@@ -275,7 +297,7 @@ export function RequestsList({ requests, onApprove, onReject, userRole }: Reques
                   )}
                   {request.reviewNotes && (
                     <div className="mt-2 text-gray-200">
-                      <strong>Review Notes:</strong> {request.reviewNotes}
+                      <strong>Comments & Review Notes:</strong> {request.reviewNotes}
                     </div>
                   )}
                 </div>
@@ -285,6 +307,7 @@ export function RequestsList({ requests, onApprove, onReject, userRole }: Reques
         )}
       </div>
 
+      {/*Review Modal (Admin) */}
       {reviewingRequest && (
         <RequestReviewModal
           request={reviewingRequest}
@@ -293,6 +316,64 @@ export function RequestsList({ requests, onApprove, onReject, userRole }: Reques
           onClose={() => setReviewingRequest(null)}
         />
       )}
+
+      {/* Comment Modal (Faculty) */}
+      {commentingRequest && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg shadow-xl p-6 max-w-2xl w-full">
+            <h2 className="text-2xl font-bold text-gray-800 mb-4">
+              Add Comment
+            </h2>
+
+            {/* Request Summary */}
+            <div className="bg-gray-50 rounded-md p-4 mb-4">
+              <div className="text-sm">
+                <span className="font-medium">Request:</span>
+                <span className="ml-2 capitalize">{commentingRequest.category}</span>
+                <span className="ml-2">-</span>
+                <span className="ml-2 font-semibold">
+                  ${parseFloat(commentingRequest.amount.toString()).toLocaleString()}
+                </span>
+              </div>
+            </div>
+
+            {/* Comment Input */}
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Your Comment
+              </label>
+              <textarea
+                value={commentText}
+                onChange={(e) => setCommentText(e.target.value)}
+                rows={4}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Add your feedback or recommendations for the admin..."
+              />
+            </div>
+
+            {/* Buttons */}
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  setCommentingRequest(null);
+                  setCommentText('');
+                }}
+                className="flex-1 bg-gray-200 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-300 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleAddComment}
+                disabled={!commentText.trim()}
+                className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors font-medium disabled:bg-gray-300 disabled:cursor-not-allowed"
+              >
+                💬 Add Comment
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      
     </div>
   );
 }
