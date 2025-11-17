@@ -41,10 +41,10 @@ export interface SpendingRequest {
   reviewDate?: string;
   reviewedBy?: number;
   reviewNotes?: string;
-  aiPreApprovalRecommendation: string;
-  aiPreApprovalReasoning:      string;
-  aiConfidence:                string | number;
-  aiWarnings:                  string;
+  aiPreApprovalRecommendation?: string;
+  aiPreApprovalReasoning?:      string;
+  aiConfidence?:                string | number;
+  aiWarnings?:                  string | string[];
   grant?: Grant;
   userRole?: string;
   users?: Array<{
@@ -53,6 +53,13 @@ export interface SpendingRequest {
     firstName: string;
     lastName: string;
     role?: string;
+  }>;
+  // Optional comments on the request (simple shape for front-end display)
+  comments?: Array<{
+    id?: number;
+    author?: string;
+    text: string;
+    createdAt?: string;
   }>;
 }
 

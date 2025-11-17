@@ -4,20 +4,20 @@ import { useState } from 'react';
 import type { SpendingRequest } from '../types';
 import { STATUS_COLORS } from '../config/constants';
 import { RequestReviewModal } from './RequestReview';
-import { string } from 'zod';
 
 interface RequestsListProps {
   requests: SpendingRequest[];
   onApprove?: (requestId: number, reviewNotes: string) => void;
   onReject?: (requestId: number, reviewNotes: string) => void;
   userRole?: string;
-  onAddComment?: (requestId: number, comment: string) => void;
+  onAddComment?: (requestId: number, comment: string) => Promise<void> | void;
 }
 
 export function RequestsList({ requests, onApprove, onReject, userRole, onAddComment }: RequestsListProps) {
   const [reviewingRequest, setReviewingRequest] = useState<SpendingRequest | null>(null);
-  const [commentingRequest, setCommentingRequest] = useState<SpendingRequest | null>(null);
+  const [openCommentFor, setOpenCommentFor] = useState<number | null>(null);
   const [commentText, setCommentText] = useState('');
+  const [addingCommentFor, setAddingCommentFor] = useState<number | null>(null);
   const [sortBy, setSortBy] = useState<'newest' | 'oldest' | 'ai-approved' | 'ai-concerns'>('newest');
   const [activeTab, setActiveTab] = useState<'pending' | 'history'>('pending');
 
@@ -39,14 +39,6 @@ export function RequestsList({ requests, onApprove, onReject, userRole, onAddCom
     if (reviewingRequest && onReject) {
       onReject(reviewingRequest.id, reviewNotes);
       setReviewingRequest(null);
-    }
-  };
-
-  const handleAddComment = () => {
-    if (commentingRequest && onAddComment && commentText.trim()) {
-      onAddComment(commentingRequest.id, commentText);
-      setCommentingRequest(null);
-      setCommentText('');
     }
   };
 
@@ -264,16 +256,6 @@ export function RequestsList({ requests, onApprove, onReject, userRole, onAddCom
                 )}
                 
                 {/* Action Buttons for Pending Requests */}
-                {userRole === 'faculty' && request.status === 'pending' && onAddComment && (
-                  <div className="flex gap-2 mb-3">
-                    <button
-                      onClick={() => setCommentingRequest(request)}
-                      className="flex-1 bg-accent text-darkblue py-2 px-4 rounded-md hover:bg-[#52e0c4] transition-colors text-sm font-semibold"
-                    >
-                      Add Comment
-                    </button>
-                  </div>
-                )}
                 {userRole === 'admin' && request.status === 'pending' && onApprove && onReject && (
                   <div className="flex gap-2 mb-3">
                     <button
@@ -282,6 +264,60 @@ export function RequestsList({ requests, onApprove, onReject, userRole, onAddCom
                     >
                       Review Request
                     </button>
+                  </div>
+                )}
+
+                {/* Comment UI for faculty users (only for pending requests) */}
+                {userRole === 'faculty' && request.status === 'pending' && (
+                  <div className="mb-3">
+                    <button
+                      onClick={() => {
+                        setOpenCommentFor(openCommentFor === request.id ? null : request.id);
+                        setCommentText('');
+                      }}
+                      className="text-sm underline text-gray-300 hover:text-white"
+                    >
+                      {openCommentFor === request.id ? 'Cancel' : 'Add Comment'}
+                    </button>
+
+                    {openCommentFor === request.id && (
+                      <div className="mt-2 flex gap-2">
+                        <textarea
+                          value={commentText}
+                          onChange={(e) => setCommentText(e.target.value)}
+                          placeholder="Enter comment"
+                          className="flex-1 px-3 py-2 bg-gray-800 border border-gray-600 rounded text-sm text-white focus:outline-none"
+                          rows={2}
+                        />
+                        <button
+                          onClick={async () => {
+                            if (!commentText.trim()) return;
+                            if (!onAddComment) {
+                              // no-op if parent didn't provide handler
+                              setOpenCommentFor(null);
+                              setCommentText('');
+                              return;
+                            }
+
+                            setAddingCommentFor(request.id);
+                            try {
+                              await onAddComment(request.id, commentText.trim());
+                              // rely on parent (App) to refresh and show modal; just close input
+                              setOpenCommentFor(null);
+                              setCommentText('');
+                            } catch (err) {
+                              console.error('Add comment failed', err);
+                            } finally {
+                              setAddingCommentFor(null);
+                            }
+                          }}
+                          disabled={addingCommentFor === request.id}
+                          className="bg-accent text-darkblue px-3 py-2 rounded text-sm font-semibold disabled:opacity-50"
+                        >
+                          {addingCommentFor === request.id ? 'Adding...' : 'Submit'}
+                        </button>
+                      </div>
+                    )}
                   </div>
                 )}
                 
@@ -297,7 +333,7 @@ export function RequestsList({ requests, onApprove, onReject, userRole, onAddCom
                   )}
                   {request.reviewNotes && (
                     <div className="mt-2 text-gray-200">
-                      <strong>Comments & Review Notes:</strong> {request.reviewNotes}
+                      <strong>Review Notes:</strong> {request.reviewNotes}
                     </div>
                   )}
                 </div>
@@ -307,7 +343,6 @@ export function RequestsList({ requests, onApprove, onReject, userRole, onAddCom
         )}
       </div>
 
-      {/*Review Modal (Admin) */}
       {reviewingRequest && (
         <RequestReviewModal
           request={reviewingRequest}
@@ -316,64 +351,6 @@ export function RequestsList({ requests, onApprove, onReject, userRole, onAddCom
           onClose={() => setReviewingRequest(null)}
         />
       )}
-
-      {/* Comment Modal (Faculty) */}
-      {commentingRequest && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg shadow-xl p-6 max-w-2xl w-full">
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">
-              Add Comment
-            </h2>
-
-            {/* Request Summary */}
-            <div className="bg-gray-50 rounded-md p-4 mb-4">
-              <div className="text-sm">
-                <span className="font-medium">Request:</span>
-                <span className="ml-2 capitalize">{commentingRequest.category}</span>
-                <span className="ml-2">-</span>
-                <span className="ml-2 font-semibold">
-                  ${parseFloat(commentingRequest.amount.toString()).toLocaleString()}
-                </span>
-              </div>
-            </div>
-
-            {/* Comment Input */}
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Your Comment
-              </label>
-              <textarea
-                value={commentText}
-                onChange={(e) => setCommentText(e.target.value)}
-                rows={4}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Add your feedback or recommendations for the admin..."
-              />
-            </div>
-
-            {/* Buttons */}
-            <div className="flex gap-3">
-              <button
-                onClick={() => {
-                  setCommentingRequest(null);
-                  setCommentText('');
-                }}
-                className="flex-1 bg-gray-200 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-300 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleAddComment}
-                disabled={!commentText.trim()}
-                className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors font-medium disabled:bg-gray-300 disabled:cursor-not-allowed"
-              >
-                💬 Add Comment
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-      
     </div>
   );
 }

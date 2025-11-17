@@ -22,7 +22,7 @@ export function RequestReviewModal({
   const [reviewNotes, setReviewNotes] = useState('');
 
   // Helper function to get AI pre-approval badge styling
-  const getPreApprovalBadge = (recommendation: string) => {
+  const getPreApprovalBadge = (recommendation: string | undefined) => {
     switch (recommendation) {
       case 'approved':
         return {
@@ -53,8 +53,8 @@ export function RequestReviewModal({
     }
   };
 
-  const preApprovalBadge = request.preApprovalStatus 
-    ? getPreApprovalBadge(request.preApprovalStatus.recommendation)
+  const preApprovalBadge = request.aiPreApprovalRecommendation
+    ? getPreApprovalBadge(request.aiPreApprovalRecommendation)
     : null;
 
   return (
@@ -71,7 +71,7 @@ export function RequestReviewModal({
         </h2>
 
         {/* AI Analysis Section */}
-        {request.preApprovalStatus && (
+  {request.aiPreApprovalRecommendation && (
           <div className="mb-4">
             <h3 className="text-sm font-semibold text-gray-300 mb-2 flex items-center gap-2">
               <span className="text-accent">🤖</span> AI Analysis
@@ -84,27 +84,27 @@ export function RequestReviewModal({
                   <span className="text-xl">{preApprovalBadge.icon}</span>
                   <span>{preApprovalBadge.label}</span>
                 </div>
-                {request.preApprovalStatus.reasoning && (
+                {request.aiPreApprovalReasoning && (
                   <p className="text-xs text-gray-300">
-                    <span className="font-semibold">Reasoning:</span> {request.preApprovalStatus.reasoning}
+                    <span className="font-semibold">Reasoning:</span> {request.aiPreApprovalReasoning}
                   </p>
                 )}
-                {request.confidence !== null && request.confidence !== undefined && (
+                {request.aiConfidence !== null && request.aiConfidence !== undefined && (
                   <p className="text-xs text-gray-300 mt-1">
-                    <span className="font-semibold">Confidence:</span> {(request.confidence * 100).toFixed(0)}%
+                    <span className="font-semibold">Confidence:</span> {(Number(request.aiConfidence) * 100).toFixed(0)}%
                   </p>
                 )}
               </div>
             )}
 
             {/* AI Warnings */}
-            {request.warnings && request.warnings.length > 0 && (
+            {request.aiWarnings && (
               <div className="p-3 rounded-md bg-orange-500/10 border border-orange-500/30">
                 <div className="text-sm font-semibold text-orange-400 mb-2">
                   ⚠ AI Detected Concerns:
                 </div>
                 <ul className="text-xs text-gray-300 space-y-1">
-                  {request.warnings.map((warning, idx) => (
+                  {(Array.isArray(request.aiWarnings) ? request.aiWarnings : [request.aiWarnings]).map((warning, idx) => (
                     <li key={idx}>• {warning}</li>
                   ))}
                 </ul>
@@ -135,14 +135,17 @@ export function RequestReviewModal({
                 </span>
               </div>
             )}
-            {/* ADDED THIS: Display who created the request */}
+            {/* Display who created the request */}
             {request.users && request.users.length > 0 && (
-              <p className="text-xs text-gray-500 mt-1">
-                Submitted by: {(() => {
-                  const creator = request.users.find(u => u.role === 'creator');
-                  return creator ? `${creator.firstName} ${creator.lastName}` : 'Unknown';
-                })()}
-              </p>
+              <div className='col-span-2'>
+                <span className="font-medium text-gray-400">Submitted By:</span>
+                <span className="ml-2 text-white">
+                  {(() => {
+                    const creator = request.users.find(u => u.role === 'creator');
+                    return creator ? `${creator.firstName} ${creator.lastName}` : 'Unknown';
+                  })()}
+                </span>
+                </div>
             )}
             <div className="col-span-2">
               <span className="font-medium text-gray-400">Requested:</span>

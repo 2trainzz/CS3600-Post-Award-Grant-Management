@@ -177,10 +177,15 @@ function App() {
     const success = await spending.addComment(auth.token, requestId, comment);
 
     if (success) {
-      alert('Comment added successfully!');
+      // Use the app modal instead of an alert
+      setModalMessage('Comment added successfully!');
       // Reload requests to show the new comment
       spending.loadRequests(auth.token);
+      return true;
     }
+
+    // If adding the comment failed, throw so callers (RequestsList) can handle optimistic UI revert
+    throw new Error('Failed to add comment');
   };
 
   // ============================================================================
@@ -239,6 +244,9 @@ function App() {
         )}
 
         {view === VIEWS.REQUESTS && (
+          <>
+          {console.log('User role:', auth.user?.role)}
+          {console.log('onAddComment defined?', !!handleAddComment)}  
           <RequestsList 
             requests={spending.requests}
             onApprove={handleApprove}
@@ -246,6 +254,7 @@ function App() {
             userRole={auth.user?.role}
             onAddComment={handleAddComment}
           />
+        </>
         )}
       </main>
 
