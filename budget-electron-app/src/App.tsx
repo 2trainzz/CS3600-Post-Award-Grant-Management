@@ -244,9 +244,7 @@ function App() {
         )}
 
         {view === VIEWS.REQUESTS && (
-          <>
-          {console.log('User role:', auth.user?.role)}
-          {console.log('onAddComment defined?', !!handleAddComment)}  
+          <> 
           <RequestsList 
             requests={spending.requests}
             onApprove={handleApprove}

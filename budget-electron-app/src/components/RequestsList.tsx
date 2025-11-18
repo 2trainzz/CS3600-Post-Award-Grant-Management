@@ -202,12 +202,21 @@ export function RequestsList({ requests, onApprove, onReject, userRole, onAddCom
                 <div className="flex justify-between items-start mb-4">
                   {/* Text styling */}
                   <div className="flex-1 min-w-0">
-                    <h3 className="text-lg font-semibold text-white capitalize truncate">{request.category}</h3>
-                    {request.grant && (
+                    <h3 className="text-lg font-semibold text-white truncate">
+                      {request.grant ? `${request.grant.grantName}` : `Unknown Grant`}
+                      </h3>
                       <p className="text-sm text-gray-400 truncate">
-                        {request.grant.grantName} ({request.grant.grantNumber})
+                        {request.grant && `${request.grant.grantNumber} `}
+                        <span className="capitalize">{request.category}</span>
                       </p>
-                    )}
+                      {request.users && request.users.length > 0 && (() => {
+                      const creator = request.users.find(u => u.role === 'creator');
+                      return creator ? (
+                        <p className="text-xs text-gray-500 mt-1">
+                          Requested by: {creator.firstName} {creator.lastName}
+                        </p>
+                      ) : null;
+                    })()}
                   </div>
                   {/* Layout and text styling */}
                   <div className="text-right ml-4 flex-shrink-0">
@@ -242,10 +251,11 @@ export function RequestsList({ requests, onApprove, onReject, userRole, onAddCom
                 <p className="text-sm text-gray-300 mb-3 flex-grow">{request.description}</p>
 
                 {/* Warnings from AI */}
+                {/* COMMENTED OUT: SAVE FOR PHASE 4
                 {request.warnings && request.warnings.length > 0 && (
                   <div className="mb-3 p-3 rounded-md bg-orange-500/10 border border-orange-500/30">
                     <div className="text-sm font-semibold text-orange-400 mb-1">
-                      ⚠ AI Detected Concerns:
+                      ⚠ AI Detected Problems:
                     </div>
                     <ul className="text-xs text-gray-300 space-y-1">
                       {request.warnings.map((warning, idx) => (
@@ -254,6 +264,7 @@ export function RequestsList({ requests, onApprove, onReject, userRole, onAddCom
                     </ul>
                   </div>
                 )}
+                END OF COMMENTED OUT SECTION*/}
                 
                 {/* Action Buttons for Pending Requests */}
                 {userRole === 'admin' && request.status === 'pending' && onApprove && onReject && (
@@ -332,8 +343,35 @@ export function RequestsList({ requests, onApprove, onReject, userRole, onAddCom
                     </div>
                   )}
                   {request.reviewNotes && (
-                    <div className="mt-2 text-gray-200">
-                      <strong>Review Notes:</strong> {request.reviewNotes}
+                    <div className="mt-2">
+                      <strong className="text-gray-400">Comments & Review Notes:</strong>
+                      <div className="whitespace-pre-wrap text-gray-200 mt-1">
+                        {request.reviewNotes.split('\n').map((line, i) => {
+                          // Format admin review notes with icons
+                          if (line.includes('(admin)') && line.includes('APPROVED')) {
+                            return (
+                              <div key={i} className="text-green-400 font-semibold">
+                                ☑️ {line}
+                              </div>
+                            );
+                          } else if (line.includes('(admin)') && line.includes('REJECTED')) {
+                            return (
+                              <div key={i} className="text-red-400 font-semibold">
+                                🗙 {line}
+                              </div>
+                            );
+                          } else if (line.includes('(faculty)')) {
+                            return (
+                              <div key={i} className="text-blue-300">
+                                {line}
+                              </div>
+                            );
+                          } else if (line.trim()) {
+                            return <div key={i}>{line}</div>;
+                          }
+                          return null;
+                        })}
+                        </div>
                     </div>
                   )}
                 </div>

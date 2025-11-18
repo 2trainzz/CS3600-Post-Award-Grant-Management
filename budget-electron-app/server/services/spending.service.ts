@@ -205,6 +205,7 @@ export async function getGrantSpendingRequests(grantId: number, userId: number) 
           },
         },
       },
+      grant: true,
       user: {
         select: {
           id: true,
@@ -226,6 +227,7 @@ export async function getGrantSpendingRequests(grantId: number, userId: number) 
       const sr = ugr.spendingRequest;
       requestMap.set(requestId, {
         ...sr,
+        grant: ugr.grant,
         users: [],
         // Parse AI data for frontend
         preApprovalStatus: sr.aiPreApprovalRecommendation ? {
@@ -442,11 +444,18 @@ export async function updateRequestStatus(
   });
 
   // Format the new note with timestamp and user info
-  const timestamp = new Date().toLocaleString();
+  const timestamp = new Date().toLocaleString('en-US', {
+  month: 'short',
+  day: 'numeric',
+  year: 'numeric',
+  hour: 'numeric',
+  minute: '2-digit',
+  hour12: true
+  }); 
   const statusAction = status === 'approved' ? 'APPROVED' : 'REJECTED';
   const newNote = reviewNotes 
-    ? `[${timestamp}] ${reviewer.firstName} ${reviewer.lastName} (${reviewer.role}) ${statusAction}: ${reviewNotes}`
-    : `[${timestamp}] ${reviewer.firstName} ${reviewer.lastName} (${reviewer.role}) ${statusAction} the request.`;
+    ? `${reviewer.firstName} ${reviewer.lastName} (${reviewer.role}) - ${timestamp}: ${statusAction} - ${reviewNotes}`
+    : `${reviewer.firstName} ${reviewer.lastName} (${reviewer.role}) - ${timestamp}: ${statusAction} the request.`;
   
   // Append to existing review notes (don't replace!)
   const updatedNotes = currentRequest?.reviewNotes 
@@ -559,12 +568,19 @@ export async function addRequestComment(
   });
 
   //format the new comment with timestamp and user info
-  const timestamp = new Date().toLocaleString();
-  const newComment = `[${timestamp}] ${user.firstName} ${user.lastName} (${user.role}): ${comment}`;
+  const timestamp = new Date().toLocaleString('en-US',{
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true
+  });
+  const newComment = `💬 ${user.firstName} ${user.lastName} (${user.role}) - ${timestamp}:\n   ${comment}`;
   
   //append to existing review notes
   const updatedNotes = request?.reviewNotes 
-    ? `${request.reviewNotes}\n\n${newComment}`
+    ? `${request.reviewNotes}\n${newComment}`
     : newComment;
 
   //update the request

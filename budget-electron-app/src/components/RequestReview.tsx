@@ -97,21 +97,24 @@ export function RequestReviewModal({
               </div>
             )}
 
-            {/* AI Warnings */}
-            {request.aiWarnings && (
-              <div className="p-3 rounded-md bg-orange-500/10 border border-orange-500/30">
-                <div className="text-sm font-semibold text-orange-400 mb-2">
-                  ⚠ AI Detected Concerns:
-                </div>
-                <ul className="text-xs text-gray-300 space-y-1">
-                  {(Array.isArray(request.aiWarnings) ? request.aiWarnings : [request.aiWarnings]).map((warning, idx) => (
-                    <li key={idx}>• {warning}</li>
-                  ))}
-                </ul>
+            {/*
+                AI Warnings — COMMENTED OUT UNTIL PHASE 4
+
+                {request.aiWarnings && (
+                  <div className="p-3 rounded-md bg-orange-500/10 border border-orange-500/30">
+                    <div className="text-sm font-semibold text-orange-400 mb-2">
+                      ⚠ AI Detected Problems:
+                    </div>
+                    <ul className="text-xs text-gray-300 space-y-1">
+                      {(Array.isArray(request.aiWarnings) ? request.aiWarnings : [request.aiWarnings]).map((warning, idx) => (
+                        <li key={idx}>• {warning}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              */}
               </div>
-            )}
-          </div>
-        )}
+        )} 
 
         {/* Request Details */}
         <div className="bg-dark-input rounded-md p-4 mb-4 border border-gray-700">
@@ -159,6 +162,43 @@ export function RequestReviewModal({
             <p className="text-sm text-white mt-1">{request.description}</p>
           </div>
         </div>
+
+        {/* Existing Comments & Review Notes - ADD THIS FIRST */}
+        {request.reviewNotes && (
+          <div className="mb-4">
+            <h3 className="text-sm font-semibold text-gray-300 mb-2">
+              💬 Comments & Review Notes
+            </h3>
+            <div className="bg-dark-input rounded-md p-4 border border-gray-700">
+              <div className="whitespace-pre-wrap text-sm">
+                {request.reviewNotes.split('\n').map((line, i) => {
+                  if (line.includes('(admin)') && line.includes('APPROVED')) {
+                    return (
+                      <div key={i} className="text-green-400 font-semibold mb-1">
+                        ☑️ {line}
+                      </div>
+                    );
+                  } else if (line.includes('(admin)') && line.includes('REJECTED')) {
+                    return (
+                      <div key={i} className="text-red-400 font-semibold mb-1">
+                        🗙 {line}
+                      </div>
+                    );
+                  } else if (line.includes('(faculty)')) {
+                    return (
+                      <div key={i} className="text-blue-300 mb-1">
+                        {line}
+                      </div>
+                    );
+                  } else if (line.trim()) {
+                    return <div key={i} className="text-gray-300 mb-1">{line}</div>;
+                  }
+                  return null;
+                })}
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Review Notes */}
         <div className="mb-4">
