@@ -20,4 +20,7 @@
 {"id":20,"username":"mcurrierj","password":"mcurr","email":"mcurrierj@tuttocitta.it","firstName":"Mitchell","lastName":"Currier","role":"approver","department":"computer science"},
 {"id":21,"username":"admin1","password":"admin","email":"admin@hotmail.com","firstName":"Adam","lastName":"Minster","role":"admin","department":"computer science"},
 {"id":22,"username":"faculty1","password":"faculty","email":"faculty@hotmail.com","firstName":"Fran","lastName":"Colt","role":"faculty","department":"computer science"},
-{"id":23,"username":"student1","password":"student","email":"student@hotmail.com","firstName":"Stew","lastName":"Denty","role":"student","department":"computer science"}]
+{"id":23,"username":"student1","password":"student","email":"student@hotmail.com","firstName":"Stew","lastName":"Denty","role":"student","department":"computer science"},
+{"id":24,"username":"admin2","password":"admin","email":"admindos@gmail.com","firstName":"Ada","lastName":"Meister","role":"admin","department":"electrical engineering"},
+{"id":25,"username":"faculty2","password":"faculty","email":"facultydos@gmail.com","firstName":"Frankie","lastName":"Cobal","role":"faculty","department":"electrical engineering"},
+{"id":26,"username":"student2","password":"student","email":"studentdos@gmail.com","firstName":"Stella","lastName":"Denise","role":"student","department":"electrical engineering"}]

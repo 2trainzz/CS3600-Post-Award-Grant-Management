@@ -2,9 +2,12 @@
 {"id":2,"ruleType":"general","policyHolder":"University of Idaho","description":"Must be sufficient informaiton provided"},
 {"id":3,"ruleType":"student","policyHolder":"University of Idaho","description":"Single Spending cannot exceed $20,000"},
 {"id":4,"ruleType":"student","policyHolder":"University of Idaho","description":"Request must align with grant goal"},
-{"id":5,"ruleType":"general","policyHolder":"University of Idaho","description":"Spending has to be before grant expiress"},
-{"id":6,"ruleType":"general","policyHolder":"Federal","description":"Request must be made at leat 24 hours ahead of spending"},
+{"id":5,"ruleType":"general","policyHolder":"University of Idaho","description":"Spending has to be before grant expires"},
+{"id":6,"ruleType":"general","policyHolder":"Federal","description":"Request must be made at least 24 hours ahead of spending"},
 {"id":7,"ruleType":"student","policyHolder":"Federal","description":"Request must have justification"},
 {"id":8,"ruleType":"student","policyHolder":"Federal","description":"Students cannot use all grant money on one request"},
-{"id":9,"ruleType":"general","policyHolder":"Federal","description":"Spending cannot exceed grant amount"},
-{"id":10,"ruleType":"travel","policyHolder":"Federal","description":"International travel request must be 30 days out"}]
+{"id":9,"ruleType":"general","policyHolder":"Federal","description":"Spending cannot exceed the grant amount"},
+{"id":10,"ruleType":"travel","policyHolder":"Federal","description":"International travel request must be 30 ahead of travel"},
+{"id":11,"ruleType":"travel","policyHolder":"University of Idaho","description":"Domestic travel request must be 5 days ahead of travel"},
+{"id":12,"ruleType":"travel","policyHolder":"Federal","description":"Travel request cannot exceed travel balance"},
+{"id":13,"ruleType":"student","policyHolder":"Federal","description":"Student request cannot exceed student balance"}]

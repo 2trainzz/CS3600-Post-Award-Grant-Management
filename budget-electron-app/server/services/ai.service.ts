@@ -117,10 +117,12 @@ If the request is unclear or missing information, include it in warnings.`;
     }
 
     //validate category is one of the allowed values
-    if (parsedData.category !== 'travel' && parsedData.category !== 'students') {
+
+    if (parsedData.category !== 'travel' && parsedData.category !== 'student') {
       logger.error('Invalid category from AI', { category: parsedData.category });
       throw new Error('Could not determine if this is a travel or student expense. Please be more specific.');
     }
+  
 
     //validate amount is a positive number
     const amount = parseFloat(parsedData.amount);
