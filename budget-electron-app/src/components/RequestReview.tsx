@@ -163,11 +163,11 @@ export function RequestReviewModal({
           </div>
         </div>
 
-        {/* Existing Comments & Review Notes - ADD THIS FIRST */}
+        {/* Existing Comments */}
         {request.reviewNotes && (
           <div className="mb-4">
             <h3 className="text-sm font-semibold text-gray-300 mb-2">
-              💬 Comments & Review Notes
+              Comments
             </h3>
             <div className="bg-dark-input rounded-md p-4 border border-gray-700">
               <div className="whitespace-pre-wrap text-sm">
