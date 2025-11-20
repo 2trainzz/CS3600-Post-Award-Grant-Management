@@ -250,8 +250,7 @@ export function RequestsList({ requests, onApprove, onReject, userRole, onAddCom
                 
                 <p className="text-sm text-gray-300 mb-3 flex-grow">{request.description}</p>
 
-                {/* Warnings from AI */}
-                {/* COMMENTED OUT: SAVE FOR PHASE 4
+                {/* Problems detected from AI */}
                 {request.warnings && request.warnings.length > 0 && (
                   <div className="mb-3 p-3 rounded-md bg-orange-500/10 border border-orange-500/30">
                     <div className="text-sm font-semibold text-orange-400 mb-1">
@@ -264,7 +263,6 @@ export function RequestsList({ requests, onApprove, onReject, userRole, onAddCom
                     </ul>
                   </div>
                 )}
-                END OF COMMENTED OUT SECTION*/}
                 
                 {/* Action Buttons for Pending Requests */}
                 {userRole === 'admin' && request.status === 'pending' && onApprove && onReject && (

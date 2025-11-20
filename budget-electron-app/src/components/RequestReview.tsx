@@ -97,9 +97,7 @@ export function RequestReviewModal({
               </div>
             )}
 
-            {/*
-                AI Warnings — COMMENTED OUT UNTIL PHASE 4
-
+            {/* AI Detected Problems */}
                 {request.aiWarnings && (
                   <div className="p-3 rounded-md bg-orange-500/10 border border-orange-500/30">
                     <div className="text-sm font-semibold text-orange-400 mb-2">
@@ -112,7 +110,6 @@ export function RequestReviewModal({
                     </ul>
                   </div>
                 )}
-              */}
               </div>
         )} 
 

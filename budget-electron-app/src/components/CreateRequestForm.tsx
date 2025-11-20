@@ -252,8 +252,7 @@ export function CreateRequestForm({
                     </div>
                   </div>
 
-                 {/*
-                  Warnings
+                  {/* AI Detected Problems */}
                   {aiParsedData.warnings && aiParsedData.warnings.length > 0 && (
                     <div className="p-3 rounded-md bg-orange-500/10 border border-orange-500/30">
                       <div className="text-sm font-semibold text-orange-400 mb-1">
@@ -266,8 +265,6 @@ export function CreateRequestForm({
                       </ul>
                     </div>
                   )}
-                */}
-
 
                   {/* Submit AI Request Button */}
                   <button
