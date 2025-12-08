@@ -8,8 +8,15 @@ This full stack application aims to help solve this problem. The use should be a
 
 This app uses React, Vite and Electron for the front end. The backend is supported via Express js API. It also uses Prisma (an ORM) to contact the database in MySQL. Lastly, it utilizes Groq as the LLM and the Groq free API as the API for the LLM.
 
-to build app: npm run dev
+We use node.js as the environment. To run this project, you must have node.js and npm. You also need MySQL (we use it locally), and to generate a Groq API key. Create a .env in your root directory with your Groq API key and MySQL information. Use npm to install any other dependencies with npm install.
 
-to see prisma schema: npm run prisma:studio
+To setup, update, and seed database:
+npm run prisma:generate
 
-update db: npx prisma migrate dev
+npm run prisma:migrate
+
+npx prisma db seed
+
+To see prisma schema: npm run prisma:studio
+
+To build app: npm run dev
