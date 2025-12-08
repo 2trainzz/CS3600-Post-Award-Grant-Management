@@ -11,6 +11,7 @@ This app uses React, Vite and Electron for the front end. The backend is support
 We use node.js as the environment. To run this project, you must have node.js and npm. You also need MySQL (we use it locally), and to generate a Groq API key. Create a .env in your root directory with your Groq API key and MySQL information. Use npm to install any other dependencies with npm install.
 
 To setup, update, and seed database:
+
 npm run prisma:generate
 
 npm run prisma:migrate
