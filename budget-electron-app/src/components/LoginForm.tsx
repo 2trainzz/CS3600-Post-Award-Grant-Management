@@ -77,8 +77,9 @@ export function LoginForm({ onLogin, error }: LoginFormProps) {
         
         <div className="mt-6 text-sm text-gray-400 text-center">
           <p>Test credentials:</p>
-          <p className="font-mono">admin / password123</p>
-          <p className="font-mono">researcher / password123</p>
+          <p className="font-mono">admin1 / admin</p>
+          <p className="font-mono">faculty1 / faculty</p>
+          <p className="font-mono">student1 / student</p>
         </div>
       </div>
     </div>

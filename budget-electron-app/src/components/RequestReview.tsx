@@ -101,7 +101,7 @@ export function RequestReviewModal({
                 {request.aiWarnings && (
                   <div className="p-3 rounded-md bg-orange-500/10 border border-orange-500/30">
                     <div className="text-sm font-semibold text-orange-400 mb-2">
-                      ⚠ AI Detected Problems:
+                      ⚠ AI Detected Rule Considerations:
                     </div>
                     <ul className="text-xs text-gray-300 space-y-1">
                       {(Array.isArray(request.aiWarnings) ? request.aiWarnings : [request.aiWarnings]).map((warning, idx) => (

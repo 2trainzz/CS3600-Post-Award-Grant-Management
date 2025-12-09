@@ -256,7 +256,7 @@ export function CreateRequestForm({
                   {aiParsedData.warnings && aiParsedData.warnings.length > 0 && (
                     <div className="p-3 rounded-md bg-orange-500/10 border border-orange-500/30">
                       <div className="text-sm font-semibold text-orange-400 mb-1">
-                        ⚠ AI Detected Problems:
+                        ⚠ AI Detected Rule Considerations:
                       </div>
                       <ul className="text-xs text-gray-300 space-y-1">
                         {aiParsedData.warnings.map((warning, idx) => (
